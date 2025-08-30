@@ -59,7 +59,7 @@ export default function ReportUserPage() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto space-y-8 px-4 md:px-6 pt-20 md:pt-8">
+    <div className="max-w-2xl mx-auto space-y-8 px-4 md:px-6 pt-24 md:pt-12">
       <header className="relative flex items-center justify-center">
         <Link href={`/profile/${username}`} className="absolute left-0">
           <Button variant="ghost" size="icon">

@@ -26,13 +26,15 @@ export function PostOptionsSheet({ isOpen, onOpenChange, post }: PostOptionsShee
   const router = useRouter();
 
   const handleCopyLink = () => {
-    const postUrl = `${window.location.origin}/feed/${post.id}`;
-    navigator.clipboard.writeText(postUrl);
-    toast({
-      title: 'Link Copied!',
-      description: 'The link to the post has been copied to your clipboard.',
-    });
-    onOpenChange(false);
+    if (typeof window !== 'undefined') {
+      const postUrl = `${window.location.origin}/feed/${post.id}`;
+      navigator.clipboard.writeText(postUrl);
+      toast({
+        title: 'Link Copied!',
+        description: 'The link to the post has been copied to your clipboard.',
+      });
+      onOpenChange(false);
+    }
   };
   
   const handleReport = () => {

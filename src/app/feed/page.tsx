@@ -105,7 +105,7 @@ export default function FeedPage() {
     }));
 
     return (
-        <div className="relative min-h-screen px-4 md:px-6 pt-20 md:pt-8">
+        <div className="relative min-h-screen px-4 md:px-6 pt-24 md:pt-12">
         <header className="space-y-2 mb-8">
             <h1 className="text-3xl font-bold tracking-tighter font-headline sm:text-4xl md:text-5xl">Community Posts</h1>
             <p className="text-muted-foreground md:text-xl/relaxed">

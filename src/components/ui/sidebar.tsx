@@ -84,7 +84,9 @@ const SidebarProvider = React.forwardRef<
         }
 
         // This sets the cookie to keep the sidebar state.
-        document.cookie = `${SIDEBAR_COOKIE_NAME}=${openState}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`
+        if (typeof document !== 'undefined') {
+          document.cookie = `${SIDEBAR_COOKIE_NAME}=${openState}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`
+        }
       },
       [setOpenProp, open]
     )
@@ -108,7 +110,7 @@ const SidebarProvider = React.forwardRef<
         }
       }
 
-      window.addEventListener("keydown", handleKeyDown)
+      window.addEventListener("keydown", handleKeyDown, { passive: true })
       return () => window.removeEventListener("keydown", handleKeyDown)
     }, [toggleSidebar])
 
@@ -133,6 +135,7 @@ const SidebarProvider = React.forwardRef<
       <SidebarContext.Provider value={contextValue}>
         <TooltipProvider delayDuration={0}>
           <div
+            // eslint-disable-next-line react/forbid-dom-props
             style={
               {
                 "--sidebar-width": SIDEBAR_WIDTH,
@@ -141,7 +144,7 @@ const SidebarProvider = React.forwardRef<
               } as React.CSSProperties
             }
             className={cn(
-              "group/sidebar-wrapper flex min-h-svh w-full has-[[data-variant=inset]]:bg-sidebar",
+              "group/sidebar-wrapper flex min-h-svh w-full has-[data-variant=inset]:bg-sidebar",
               className
             )}
             ref={ref}
@@ -199,6 +202,7 @@ const Sidebar = React.forwardRef<
             data-sidebar="sidebar"
             data-mobile="true"
             className="w-[--sidebar-width] bg-sidebar p-0 text-sidebar-foreground [&>button]:hidden"
+            // eslint-disable-next-line react/forbid-dom-props
             style={
               {
                 "--sidebar-width": SIDEBAR_WIDTH_MOBILE,
@@ -671,6 +675,7 @@ const SidebarMenuSkeleton = React.forwardRef<
       <Skeleton
         className="h-4 flex-1 max-w-[--skeleton-width]"
         data-sidebar="menu-skeleton-text"
+        // eslint-disable-next-line react/forbid-dom-props
         style={
           {
             "--skeleton-width": width,

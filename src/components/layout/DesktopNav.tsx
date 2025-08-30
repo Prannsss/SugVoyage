@@ -56,7 +56,7 @@ export default function DesktopNav() {
                     })}
                 </SidebarMenu>
             </SidebarContent>
-            <div className="mt-auto">
+            <div className="mt-auto" suppressHydrationWarning>
                  <Separator />
                 <SidebarMenu>
                     {bottomNavItems.map((item) => {

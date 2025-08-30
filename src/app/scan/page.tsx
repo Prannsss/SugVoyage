@@ -12,7 +12,7 @@ import { usePermission } from '@/hooks/use-permission';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 
 export default function ScanAndLearnPage() {
   const [result, setResult] = useState<ScanAndLearnAboutLandmarkOutput | null>(null);
@@ -25,16 +25,61 @@ export default function ScanAndLearnPage() {
   const { hasPermission: hasCameraPermission, setPermission: setCameraPermission } = usePermission('camera', true);
   const [isCameraOn, setIsCameraOn] = useState(false);
   const router = useRouter();
+  const pathname = usePathname();
+  const isCleaningUp = useRef(false);
+  const streamRef = useRef<MediaStream | null>(null);
 
+
+  // Aggressive camera cleanup function
+  const stopAllCameraStreams = useRef(() => {
+    console.log('Stopping all camera streams...');
+    
+    // Stop the video element stream
+    if (videoRef.current && videoRef.current.srcObject) {
+      const stream = videoRef.current.srcObject as MediaStream;
+      stream.getTracks().forEach(track => {
+        track.stop();
+        console.log('Video element track stopped:', track.kind);
+      });
+      videoRef.current.srcObject = null;
+    }
+    
+    // Stop the ref stream
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(track => {
+        track.stop();
+        console.log('Ref stream track stopped:', track.kind);
+      });
+      streamRef.current = null;
+    }
+    
+    // Get all active media streams and stop them
+    navigator.mediaDevices.getUserMedia({ video: true, audio: false })
+      .then(stream => {
+        stream.getTracks().forEach(track => {
+          track.stop();
+          console.log('Force stopped track:', track.kind);
+        });
+      })
+      .catch(() => {
+        // Expected if no permission or no camera
+      });
+    
+    setIsCameraOn(false);
+    isCleaningUp.current = false;
+    console.log('Camera cleanup completed');
+  });
 
   useEffect(() => {
     const getCameraStream = async () => {
       if (hasCameraPermission) {
         try {
           const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+          streamRef.current = stream;
           if (videoRef.current) {
             videoRef.current.srcObject = stream;
             setIsCameraOn(true);
+            console.log('Camera started successfully');
           }
         } catch (error) {
           console.error('Error accessing camera:', error);
@@ -46,11 +91,7 @@ export default function ScanAndLearnPage() {
           setCameraPermission(false);
         }
       } else {
-         if (videoRef.current && videoRef.current.srcObject) {
-            const stream = videoRef.current.srcObject as MediaStream;
-            stream.getTracks().forEach(track => track.stop());
-            setIsCameraOn(false);
-        }
+        stopAllCameraStreams.current();
       }
     };
 
@@ -58,20 +99,90 @@ export default function ScanAndLearnPage() {
         getCameraStream();
     }
     
+    // Cleanup function that runs when dependencies change or component unmounts
     return () => {
-      if (videoRef.current && videoRef.current.srcObject) {
-        const stream = videoRef.current.srcObject as MediaStream;
-        stream.getTracks().forEach(track => track.stop());
-      }
+      stopAllCameraStreams.current();
     };
   }, [hasCameraPermission, setCameraPermission, toast, isInitializing]);
 
   useEffect(() => {
-    // This effect prevents a hydration mismatch by ensuring the client-side
-    // logic that depends on `hasCameraPermission` runs after the initial render.
     const timer = setTimeout(() => setIsInitializing(false), 200);
     return () => clearTimeout(timer);
   }, []);
+
+  // Pathname change detection - stops camera when route changes
+  useEffect(() => {
+    // When pathname changes (route navigation), stop camera
+    if (pathname !== '/scan') {
+      console.log('🚀 Route changed from /scan, stopping camera...');
+      stopAllCameraStreams.current();
+    }
+  }, [pathname]);
+
+  // Additional cleanup for component unmount - this ensures camera stops on navigation
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      console.log('🚀 Page unloading, stopping camera...');
+      stopAllCameraStreams.current();
+    };
+
+    // Listen for route changes (Next.js navigation)
+    const handleRouteChange = () => {
+      console.log('🚀 Route changing, stopping camera...');
+      stopAllCameraStreams.current();
+    };
+
+    // Listen for clicks on navigation elements
+    const handleNavigationClick = (e: Event) => {
+      const target = e.target as HTMLElement;
+      if (target.tagName === 'A' || target.closest('a') || target.getAttribute('href')) {
+        console.log('🚀 Navigation click detected, stopping camera...');
+        setTimeout(() => stopAllCameraStreams.current(), 100);
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    window.addEventListener('popstate', handleRouteChange);
+    document.addEventListener('click', handleNavigationClick, true);
+
+    // Main cleanup for component unmount (navigation)
+    return () => {
+      console.log('🚀 Component unmounting, stopping camera...');
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      window.removeEventListener('popstate', handleRouteChange);
+      document.removeEventListener('click', handleNavigationClick, true);
+      stopAllCameraStreams.current();
+    };
+  }, []);
+
+  // Handle page visibility changes (tab switching, minimizing browser)
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        // Page is hidden, pause camera
+        if (streamRef.current) {
+          streamRef.current.getTracks().forEach(track => {
+            track.enabled = false;
+            console.log('Camera paused due to page visibility change');
+          });
+        }
+      } else {
+        // Page is visible, resume camera
+        if (streamRef.current && hasCameraPermission) {
+          streamRef.current.getTracks().forEach(track => {
+            track.enabled = true;
+            console.log('Camera resumed due to page visibility change');
+          });
+        }
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [hasCameraPermission]);
 
 
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -105,12 +216,8 @@ export default function ScanAndLearnPage() {
     setIsLoading(true);
     setPhotoPreview(null);
 
-    if (isCameraOn) {
-        const stream = videoRef.current?.srcObject as MediaStream;
-        stream?.getTracks().forEach(track => track.stop());
-        setIsCameraOn(false);
-    }
-    
+    // Stop camera when processing image
+    stopAllCameraStreams.current();
 
     const reader = new FileReader();
     reader.onload = async (e) => {
@@ -143,6 +250,7 @@ export default function ScanAndLearnPage() {
         const getCameraStream = async () => {
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+                streamRef.current = stream;
                 if (videoRef.current) {
                     videoRef.current.srcObject = stream;
                     setIsCameraOn(true);
@@ -157,11 +265,8 @@ export default function ScanAndLearnPage() {
   }
   
   const handleClose = () => {
-    if (videoRef.current && videoRef.current.srcObject) {
-      const stream = videoRef.current.srcObject as MediaStream;
-      stream.getTracks().forEach(track => track.stop());
-      setIsCameraOn(false);
-    }
+    console.log('🚀 Close button clicked, stopping camera...');
+    stopAllCameraStreams.current();
     router.push('/feed');
   };
 
@@ -172,14 +277,13 @@ export default function ScanAndLearnPage() {
         {!isCameraOn && <Loader2 className="h-12 w-12 animate-spin text-primary absolute" />}
       </div>
   
-      <div className="absolute top-4 right-4 z-10">
-        <Button variant="ghost" size="icon" className="text-white bg-black/30 hover:bg-black/50 rounded-full" onClick={triggerFileSelect}>
-          <Upload className="h-6 w-6" />
-        </Button>
-      </div>
        <div className="absolute bottom-20 left-0 right-0 flex items-center justify-center py-8 z-10">
-        <div className="relative flex items-center justify-center" style={{ width: '240px' }}>
-          <div className="flex-1" />
+        <div className="relative flex items-center justify-center w-60">
+          <div className="flex-1 flex justify-start">
+            <Button variant="ghost" size="icon" className="text-white bg-black/30 hover:bg-black/50 rounded-full w-12 h-12" onClick={triggerFileSelect}>
+              <Upload className="h-6 w-6" />
+            </Button>
+          </div>
           <button
             onClick={takePicture}
             disabled={!isCameraOn}
@@ -299,13 +403,16 @@ export default function ScanAndLearnPage() {
   }
 
   return (
-    <div className={cn("h-full w-full", photoPreview || !hasCameraPermission || isInitializing ? "pt-20 md:pt-8" : "")}>
+    <div className={cn("h-full w-full", photoPreview || !hasCameraPermission || isInitializing ? "pt-24 md:pt-12" : "")}>
+      <label htmlFor="file-upload" className="sr-only">Upload image file</label>
       <input
+        id="file-upload"
         type="file"
         ref={fileInputRef}
         onChange={handleFileChange}
         className="hidden"
         accept="image/*"
+        aria-label="Upload image file for scanning"
       />
         {renderContent()}
     </div>

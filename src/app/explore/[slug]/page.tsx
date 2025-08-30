@@ -32,7 +32,7 @@ export default function PlaceDetailsPage() {
 
   if (!place) {
     return (
-      <div className="text-center py-20 px-4 md:px-6 pt-20 md:pt-8">
+      <div className="text-center py-20 px-4 md:px-6 pt-24 md:pt-12">
         <h1 className="text-2xl font-bold">Place not found</h1>
         <p className="text-muted-foreground">Sorry, we couldn't find the place you're looking for.</p>
       </div>

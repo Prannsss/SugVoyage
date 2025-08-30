@@ -82,11 +82,11 @@ export default function ItineraryBuilderPage() {
   };
 
   return (
-    <div className="space-y-8 px-4 md:px-6 pt-20 md:pt-8">
+    <div className="space-y-8 px-4 md:px-6 pt-24 md:pt-12" suppressHydrationWarning>
       <header className="space-y-2">
-        <h1 className="text-3xl font-bold tracking-tighter font-headline sm:text-4xl md:text-5xl">AI Itinerary Builder</h1>
+        <h1 className="text-3xl font-bold tracking-tighter font-headline sm:text-4xl md:text-5xl">Itinerary Builder</h1>
         <p className="text-muted-foreground md:text-xl/relaxed">
-          Craft your perfect Cebu getaway in seconds.
+          Craft your perfect Cebu getaway in seconds with the help of AI.
         </p>
       </header>
       
@@ -94,7 +94,7 @@ export default function ItineraryBuilderPage() {
         <Card>
           <CardHeader>
             <CardTitle>Your Travel Preferences</CardTitle>
-            <CardDescription>Tell us what you're looking for, and our AI will do the rest.</CardDescription>
+            <CardDescription>Tell us what you're looking for, and our AI assistant will do the rest.</CardDescription>
           </CardHeader>
           <CardContent>
             <Form {...form}>

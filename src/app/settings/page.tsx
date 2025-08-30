@@ -204,7 +204,7 @@ export default function SettingsPage() {
 
 
   return (
-    <div className="max-w-4xl mx-auto px-4 md:px-6 pt-20 md:pt-8">
+    <div className="max-w-4xl mx-auto px-4 md:px-6 pt-24 md:pt-12">
         <div className="divide-y space-y-6">
             <SettingsSection title="Account & Security">
                  <Sheet onOpenChange={(open) => !open && (setIsCodeSent(false), form.reset())}>

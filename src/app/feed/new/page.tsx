@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useRef, FormEvent } from 'react';
+import { useState, useRef, FormEvent, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
@@ -68,16 +68,16 @@ export default function NewPostPage() {
   const { toast } = useToast();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  const handleCaptionChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
+  const handleCaptionChange = useCallback((event: React.ChangeEvent<HTMLTextAreaElement>) => {
     setCaption(event.target.value);
     if (textareaRef.current) {
         textareaRef.current.style.height = "auto";
         textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
     }
-  };
+  }, []);
 
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFiles = Array.from(event.target.files || []);
     if (!selectedFiles.length) return;
 
@@ -114,20 +114,20 @@ export default function NewPostPage() {
       };
       reader.readAsDataURL(file);
     });
-  };
+  }, [files, previews, toast]);
 
-  const removeMedia = (index: number) => {
+  const removeMedia = useCallback((index: number) => {
     const newFiles = [...files];
     const newPreviews = [...previews];
     newFiles.splice(index, 1);
     newPreviews.splice(index, 1);
     setFiles(newFiles);
     setPreviews(newPreviews);
-  };
+  }, [files, previews]);
 
-  const triggerFileSelect = () => fileInputRef.current?.click();
+  const triggerFileSelect = useCallback(() => fileInputRef.current?.click(), []);
 
-  const handleSubmit = (event: FormEvent) => {
+  const handleSubmit = useCallback((event: FormEvent) => {
     event.preventDefault();
 
     if (files.length === 0) {
@@ -165,12 +165,12 @@ export default function NewPostPage() {
     });
 
     router.push('/feed');
-  };
+  }, [files, location, rating, caption, privacy, toast, router]);
 
   const PrivacyIcon = privacy === 'public' ? Globe : Users;
 
   return (
-    <div className="max-w-2xl mx-auto space-y-4 px-4 md:px-6 pt-20 md:pt-8">
+    <div className="max-w-2xl mx-auto space-y-4 px-4 md:px-6 pt-24 md:pt-12">
        <header className="flex items-center justify-start relative">
         <h1 className="text-xl font-bold tracking-tight font-headline">Create Post</h1>
       </header>
@@ -312,6 +312,8 @@ export default function NewPostPage() {
                         type="button"
                         onClick={() => removeMedia(index)}
                         className="absolute top-1 right-1 bg-black/50 text-white rounded-full p-1"
+                        aria-label={`Remove media ${index + 1}`}
+                        title={`Remove media ${index + 1}`}
                       >
                         <X className="h-4 w-4" />
                       </button>
@@ -342,12 +344,15 @@ export default function NewPostPage() {
           </CardFooter>
         </Card>
 
+        <label htmlFor="media-upload" className="sr-only">Upload image or video file</label>
         <input
+          id="media-upload"
           type="file"
           ref={fileInputRef}
           onChange={handleFileChange}
           className="hidden"
           accept="image/*,video/*"
+          aria-label="Upload image or video file"
           multiple
         />
       </form>

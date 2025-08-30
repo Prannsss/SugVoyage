@@ -86,7 +86,7 @@ export default function PostDetailPage() {
 
   if (!post) {
     return (
-      <div className="flex flex-col items-center justify-center h-full text-center p-8 pt-20 md:pt-8">
+      <div className="flex flex-col items-center justify-center h-full text-center p-8 pt-24 md:pt-12">
         <h1 className="text-2xl font-bold">Post not found</h1>
         <p className="text-muted-foreground">Sorry, we couldn't find the post you're looking for.</p>
         <Button asChild variant="link" className="mt-4">
@@ -100,7 +100,7 @@ export default function PostDetailPage() {
   const isVertical = aspectRatio < 1;
 
   return (
-    <div className="w-full h-full pt-20 md:pt-8">
+    <div className="w-full h-full pt-24 md:pt-12">
          <Link href="/feed" className="hidden md:inline-flex items-center justify-center absolute top-20 left-4 z-10 p-2 bg-secondary rounded-full hover:bg-secondary/80 transition-colors md:left-72">
             <ArrowLeft className="h-6 w-6"/>
         </Link>

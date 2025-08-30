@@ -20,7 +20,7 @@ export function Logo({ showText = true }: LogoProps) {
       <div className={cn(
           "overflow-hidden transition-all duration-300 ease-in-out",
           showText ? "max-w-[150px] opacity-100" : "max-w-0 opacity-0"
-        )}>
+        )} suppressHydrationWarning>
         <span className="text-2xl font-bold font-headline text-foreground whitespace-nowrap">
           SugVoyage
         </span>
