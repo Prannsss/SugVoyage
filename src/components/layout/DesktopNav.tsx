@@ -35,7 +35,9 @@ export default function DesktopNav() {
     <div className="hidden md:block md:w-64 fixed top-0 left-0 h-full">
         <Sidebar className="border-r">
             <SidebarHeader className="p-4">
-                <Logo />
+                <div className="flex justify-center w-full">
+                    <Logo />
+                </div>
             </SidebarHeader>
             <SidebarContent>
                 <SidebarMenu>

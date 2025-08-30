@@ -18,29 +18,36 @@ export default function BottomNav() {
   const pathname = usePathname();
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 border-t bg-background/95 backdrop-blur-sm md:hidden rounded-t-2xl">
-      <div className="grid h-16 grid-cols-5">
-        {navItems.map((item) => {
-          const isActive = (item.href === '/' && pathname === '/') || (item.href !== '/' && pathname.startsWith(item.href));
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              aria-label={item.label}
-              className={cn(
-                'flex flex-col items-center justify-center text-sm font-medium transition-colors',
-                isActive ? 'text-primary' : 'text-muted-foreground hover:text-primary'
-              )}
-            >
-              <div className={cn(
-                  "p-2 rounded-full transition-colors duration-200",
-                  isActive ? 'bg-primary/10' : 'bg-transparent'
-              )}>
-                <item.icon className="h-6 w-6" />
-              </div>
-            </Link>
-          );
-        })}
+    <nav className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50 md:hidden">
+      <div className="bg-background/90 backdrop-blur-md border border-border/20 rounded-full shadow-lg px-6 py-3">
+        <div className="flex items-center justify-center space-x-8">
+          {navItems.map((item) => {
+            const isActive = (item.href === '/' && pathname === '/') || (item.href !== '/' && pathname.startsWith(item.href));
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                aria-label={item.label}
+                className={cn(
+                  'flex items-center justify-center transition-all duration-300 ease-out',
+                  'hover:scale-110 active:scale-95'
+                )}
+              >
+                <div className={cn(
+                    "p-3 rounded-full transition-all duration-300 ease-out",
+                    isActive 
+                      ? 'bg-primary/25 shadow-md scale-110' 
+                      : 'bg-transparent hover:bg-primary/10'
+                )}>
+                  <item.icon className={cn(
+                    "h-5 w-5 transition-colors duration-200",
+                    isActive ? 'text-primary' : 'text-muted-foreground'
+                  )} />
+                </div>
+              </Link>
+            );
+          })}
+        </div>
       </div>
     </nav>
   );
