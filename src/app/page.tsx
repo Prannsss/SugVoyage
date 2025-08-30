@@ -20,24 +20,20 @@ function slugify(text: string) {
   return text
     .toString()
     .toLowerCase()
-    .replace(/\s+/g, '-') // Replace spaces with -
-    .replace(/[^\w-]+/g, '') // Remove all non-word chars
-    .replace(/--+/g, '-') // Replace multiple - with single -
-    .replace(/^-+/, '') // Trim - from start of text
-    .replace(/-+$/, ''); // Trim - from end of text
+    .replace(/\s+/g, '-')
+    .replace(/[^\w-]+/g, '')
+    .replace(/--+/g, '-')
+    .replace(/^-+/, '')
+    .replace(/-+$/, '');
 }
 
 export default function ExplorePage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState("People's Choice");
   const [isSearchExpanded, setIsSearchExpanded] = useState(false);
-  const [tabPosition, setTabPosition] = useState({ left: 0, width: 0 });
   const [isMounted, setIsMounted] = useState(false);
-  const [isAnimating, setIsAnimating] = useState(false);
   const [contentVisible, setContentVisible] = useState(true);
-  const tabRefs = useRef<{ [key: string]: HTMLButtonElement | null }>({});
 
-  // Memoize filtered categories to prevent unnecessary recalculations
   const filteredCategories = useMemo(() => {
     return Object.entries(categories).reduce((acc, [category, items]) => {
       const filteredItems = items.filter(item =>
@@ -50,49 +46,19 @@ export default function ExplorePage() {
     }, {} as typeof categories);
   }, [searchTerm]);
 
-  const setTabRef = useCallback((cat: string) => (el: HTMLButtonElement | null) => {
-    tabRefs.current[cat] = el;
-  }, []);
-
-  const updateTabPosition = useCallback(() => {
-    if (!isMounted) return;
+  const visibleTabs = useMemo(() => {
+    const allTabs = Object.keys(filteredCategories);
     
-    const activeTabRef = tabRefs.current[activeTab];
-    if (!activeTabRef) return;
+    const reorderedTabs = [...allTabs];
+    const peoplesChoiceIndex = reorderedTabs.indexOf("People's Choice");
     
-    const parentElement = activeTabRef.parentElement;
-    if (!parentElement) return;
-    
-    const parentRect = parentElement.getBoundingClientRect();
-    const activeRect = activeTabRef.getBoundingClientRect();
-    
-    const newLeft = activeRect.left - parentRect.left;
-    const newWidth = activeRect.width;
-    
-    // Calculate distance to determine animation type
-    const distance = Math.abs(newLeft - tabPosition.left);
-    const isLongDistance = distance > 120; // Threshold for long distance
-    
-    if (isLongDistance && tabPosition.left !== 0) {
-      // For long distances, use a fade-out/fade-in approach
-      setIsAnimating(true);
-      
-      // Temporarily hide the background
-      setTimeout(() => {
-        setTabPosition({
-          left: newLeft,
-          width: newWidth,
-        });
-        setIsAnimating(false);
-      }, 100);
-    } else {
-      // For short distances, use normal smooth transition
-      setTabPosition({
-        left: newLeft,
-        width: newWidth,
-      });
+    if (peoplesChoiceIndex !== -1) {
+      const peoplesChoice = reorderedTabs.splice(peoplesChoiceIndex, 1)[0];
+      reorderedTabs.unshift(peoplesChoice);
     }
-  }, [activeTab, isMounted, tabPosition.left]);
+    
+    return reorderedTabs;
+  }, [filteredCategories]);
 
   useEffect(() => {
     setIsMounted(true);
@@ -101,56 +67,49 @@ export default function ExplorePage() {
   useEffect(() => {
     if (!isMounted) return;
     
-    // Small delay to ensure DOM is ready
-    const timer = setTimeout(() => {
-      updateTabPosition();
-    }, 0);
+    const availableTabs = Object.keys(filteredCategories);
     
-    return () => clearTimeout(timer);
-  }, [updateTabPosition, filteredCategories, isMounted]);
+    if (availableTabs.length > 0 && !availableTabs.includes(activeTab)) {
+      setActiveTab(availableTabs[0]);
+    }
+  }, [filteredCategories, activeTab, isMounted]);
 
 
   return (
-    <div className="flex flex-col gap-8 px-4 md:px-6 pt-24 md:pt-12">
+    <div className="flex flex-col gap-8 px-4 md:px-6 pt-24 md:pt-12 max-w-full overflow-hidden">
       <header className="space-y-4">
         <div className="flex items-center gap-4 relative">
-          <h1 className="text-3xl font-bold tracking-tighter font-headline sm:text-4xl md:text-5xl">Explore Cebu</h1>
+          <h1 className="text-3xl font-bold tracking-tighter font-headline sm:text-4xl md:text-5xl flex-shrink-0">Explore Cebu</h1>
           
-          {/* Search Pill */}
-          <div className="relative">
+          <div className={cn(
+            "transition-all duration-600 ease-[cubic-bezier(0.68,-0.55,0.265,1.55)]",
+            isSearchExpanded ? "w-64" : "w-10"
+          )}>
             <div className={cn(
-              "absolute left-0 top-1/2 -translate-y-1/2 transition-all duration-600 ease-[cubic-bezier(0.68,-0.55,0.265,1.55)] z-10",
-              isSearchExpanded ? "w-[calc(100vw-4rem)] md:w-72" : "w-10"
+              "relative bg-background/90 backdrop-blur-md border border-border/20 rounded-full shadow-lg transition-all duration-600 ease-[cubic-bezier(0.68,-0.55,0.265,1.55)] h-10",
+              isSearchExpanded ? "px-4" : "px-2.5"
             )}>
-              <div className={cn(
-                "relative bg-background/90 backdrop-blur-md border border-border/20 rounded-full shadow-lg transition-all duration-600 ease-[cubic-bezier(0.68,-0.55,0.265,1.55)] h-10",
-                isSearchExpanded ? "px-4" : "px-2.5"
-              )}>
-                {/* Static Search Icon */}
-                <Search 
-                  className="h-5 w-5 text-muted-foreground cursor-pointer absolute left-2.5 top-1/2 -translate-y-1/2"
-                  onClick={() => setIsSearchExpanded(!isSearchExpanded)}
+              <Search 
+                className="h-5 w-5 text-muted-foreground cursor-pointer absolute left-2.5 top-1/2 -translate-y-1/2"
+                onClick={() => setIsSearchExpanded(!isSearchExpanded)}
+              />
+              
+              {isSearchExpanded && (
+                <Input
+                  type="search"
+                  placeholder="Search for places in Cebu..."
+                  className="border-0 bg-transparent pl-8 pr-2 text-xs placeholder:text-xs focus-visible:ring-0 focus-visible:ring-offset-0 h-full"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  onBlur={() => {
+                    if (!searchTerm) {
+                      setTimeout(() => setIsSearchExpanded(false), 150);
+                    }
+                  }}
+                  autoFocus
                 />
-                
-                {isSearchExpanded && (
-                  <Input
-                    type="search"
-                    placeholder="Search for places in Cebu..."
-                    className="border-0 bg-transparent pl-8 pr-2 text-xs placeholder:text-xs focus-visible:ring-0 focus-visible:ring-offset-0 h-full"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    onBlur={() => {
-                      if (!searchTerm) {
-                        setTimeout(() => setIsSearchExpanded(false), 150);
-                      }
-                    }}
-                    autoFocus
-                  />
-                )}
-              </div>
+              )}
             </div>
-            {/* Spacer to maintain layout */}
-            <div className="w-10 h-10 opacity-0" />
           </div>
         </div>
         
@@ -159,54 +118,50 @@ export default function ExplorePage() {
         </p>
       </header>
       <Tabs value={activeTab} onValueChange={(newTab) => {
-        // Fade out current content
+        if (newTab === activeTab) return;
+        
         setContentVisible(false);
         
-        // Change tab and fade in new content after a short delay
-        setTimeout(() => {
-          setActiveTab(newTab);
-          setContentVisible(true);
-        }, 150);
+        requestAnimationFrame(() => {
+          setTimeout(() => {
+            setActiveTab(newTab);
+            setContentVisible(true);
+          }, 100);
+        });
       }} className="w-full">
-        {/* Centered Tab Bar with Bouncy Animation */}
-        <div className="flex justify-center mb-8">
-          <div className="relative bg-background/90 backdrop-blur-md border border-border/20 rounded-full shadow-lg p-1">
-            <ScrollArea className="w-full">
-              <div className="flex space-x-1">
-                {Object.keys(filteredCategories).map((cat) => (
+        <div className="flex justify-center mb-8 px-2">
+          <div className="relative bg-background/90 backdrop-blur-md border border-border/20 rounded-full shadow-lg p-1 max-w-full overflow-hidden">
+            <ScrollArea className="w-full max-w-[calc(100vw-2rem)]">
+              <div className="flex space-x-1 px-2">
+                {visibleTabs.map((cat) => (
                   <button
                     key={cat}
-                    ref={setTabRef(cat)}
-                    onClick={() => setActiveTab(cat)}
+                    onClick={() => {
+                      if (cat !== activeTab) {
+                        setContentVisible(false);
+                        
+                        requestAnimationFrame(() => {
+                          setTimeout(() => {
+                            setActiveTab(cat);
+                            setContentVisible(true);
+                          }, 100);
+                        });
+                      }
+                    }}
                     className={cn(
-                      "relative px-4 py-2 text-sm font-medium rounded-full transition-all duration-300 whitespace-nowrap z-10",
+                      "relative px-3 py-2 text-sm font-medium rounded-full transition-all duration-300 ease-out whitespace-nowrap z-10 flex-shrink-0",
+                      "sm:px-4",
                       activeTab === cat 
-                        ? "text-primary-foreground" 
-                        : "text-muted-foreground hover:text-foreground"
+                        ? "text-primary bg-primary/10 font-semibold" 
+                        : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
                     )}
                   >
                     {cat}
                   </button>
                 ))}
               </div>
-              <ScrollBar orientation="horizontal" />
+              <ScrollBar orientation="horizontal" className="h-2" />
             </ScrollArea>
-            
-            {/* Animated Background */}
-            {tabPosition.width > 0 && (
-              <div 
-                className={cn(
-                  styles.tabBackground,
-                  isAnimating && "opacity-0"
-                )}
-                ref={(el) => {
-                  if (el) {
-                    el.style.transform = `translateX(${tabPosition.left}px)`;
-                    el.style.width = `${tabPosition.width}px`;
-                  }
-                }}
-              />
-            )}
           </div>
         </div>
         
@@ -214,8 +169,8 @@ export default function ExplorePage() {
           <TabsContent key={cat} value={cat} className="mt-0">
             <div 
               className={cn(
-                "grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 transition-all duration-500 ease-out",
-                contentVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
+                "grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 transition-all duration-300 ease-out",
+                contentVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2"
               )}
             >
               {items.map((item, index) => (
