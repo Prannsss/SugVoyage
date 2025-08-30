@@ -1,0 +1,59 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 205 74% 95%;
+    --foreground: 224 71% 4%;
+    --card: 0 0% 100%;
+    --card-foreground: 224 71% 4%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 224 71% 4%;
+    --primary: 207 68% 53%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 207 50% 90%;
+    --secondary-foreground: 224 71% 4%;
+    --muted: 207 50% 90%;
+    --muted-foreground: 224 71% 25%;
+    --accent: 37 90% 51%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 207 40% 85%;
+    --input: 207 40% 85%;
+    --ring: 207 68% 53%;
+    --radius: 0.75rem;
+  }
+  .dark {
+    --background: 207 30% 12%;
+    --foreground: 205 74% 95%;
+    --card: 207 30% 15%;
+    --card-foreground: 205 74% 95%;
+    --popover: 207 30% 12%;
+    --popover-foreground: 205 74% 95%;
+    --primary: 207 68% 53%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 207 20% 25%;
+    --secondary-foreground: 205 74% 95%;
+    --muted: 207 20% 25%;
+    --muted-foreground: 205 74% 75%;
+    --accent: 37 90% 51%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 207 20% 25%;
+    --input: 207 20% 25%;
+    --ring: 207 68% 53%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+    -webkit-tap-highlight-color: transparent;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
