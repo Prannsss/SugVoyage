@@ -1,5 +1,5 @@
-# Firebase Studio
+# SugVoyage
 
-This is a NextJS starter in Firebase Studio.
+This is the next generation AI-powered social media marketing app.
 
-To get started, take a look at src/app/page.tsx.
+Currently only supports Cebu, Philippines.
