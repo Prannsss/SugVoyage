@@ -1,8 +1,9 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
-import Header from '@/components/layout/Header';
-import BottomNav from '@/components/layout/BottomNav';
+import ConditionalHeader from '@/components/layout/ConditionalHeader';
+import ConditionalBottomNav from '@/components/layout/ConditionalBottomNav';
+import ConditionalMain from '@/components/layout/ConditionalMain';
 import DesktopNav from '@/components/layout/DesktopNav';
 import { SidebarProvider } from '@/components/ui/sidebar';
 
@@ -44,14 +45,12 @@ export default function RootLayout({
           <div className="relative flex min-h-screen w-full flex-col">
             <DesktopNav />
             <div className="flex flex-1 flex-col md:pl-64" suppressHydrationWarning>
-              <Header />
-              <main className="flex-1 pb-24 md:pb-0">
-                <div className="h-full w-full" suppressHydrationWarning>
-                  {children}
-                </div>
-              </main>
+              <ConditionalHeader />
+              <ConditionalMain>
+                {children}
+              </ConditionalMain>
             </div>
-            <BottomNav />
+            <ConditionalBottomNav />
           </div>
         </SidebarProvider>
         <Toaster />

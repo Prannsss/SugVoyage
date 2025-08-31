@@ -19,6 +19,15 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet"
+import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -58,30 +67,30 @@ const FollowButton = ({ ...props }: ButtonProps) => {
     
     if (isFollowing) {
         return (
-            <AlertDialog>
-                <AlertDialogTrigger asChild>
+            <Sheet>
+                <SheetTrigger asChild>
                     <Button variant='secondary' {...props}>
                         <UserMinus className="mr-2 h-4 w-4" />
                         Following
                     </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                    <AlertDialogHeader>
-                    <AlertDialogTitle>Unfollow this user?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                        Are you sure you want to unfollow this person? You can always follow them back later.
-                    </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter className="flex-row-reverse sm:space-x-reverse">
-                        <AlertDialogAction onClick={handleUnfollow} className={cn(
-                            "bg-destructive text-destructive-foreground hover:bg-destructive/90 w-full sm:w-auto"
+                </SheetTrigger>
+                <SheetContent side="bottom" className="rounded-t-2xl">
+                    <SheetHeader className="text-left">
+                        <SheetTitle>Unfollow this user?</SheetTitle>
+                        <SheetDescription>
+                            Are you sure you want to unfollow this person? You can always follow them back later.
+                        </SheetDescription>
+                    </SheetHeader>
+                    <SheetFooter className="grid grid-cols-2 gap-4 pt-4">
+                        <Button variant="outline">Cancel</Button>
+                        <Button onClick={handleUnfollow} className={cn(
+                            "bg-destructive text-destructive-foreground hover:bg-destructive/90"
                         )}>
                             Unfollow
-                        </AlertDialogAction>
-                         <AlertDialogCancel className="w-full sm:w-auto">Cancel</AlertDialogCancel>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
+                        </Button>
+                    </SheetFooter>
+                </SheetContent>
+            </Sheet>
         );
     }
 
@@ -138,6 +147,9 @@ export default function ProfilePage() {
                                            <EditProfileDialog userProfile={userProfile}>
                                              <Button>Edit Profile</Button>
                                            </EditProfileDialog>
+                                           <Button variant="secondary" asChild>
+                                               <Link href="/messages">Messages</Link>
+                                           </Button>
                                             <Button size="icon" variant="ghost" asChild>
                                                 <Link href="/settings">
                                                     <Settings className="h-5 w-5" />
@@ -147,7 +159,9 @@ export default function ProfilePage() {
                                    ) : (
                                        <>
                                          <FollowButton />
-                                         <Button variant="secondary">Message</Button>
+                                         <Button variant="secondary" asChild>
+                                             <Link href={`/messages?with=${username}`}>Message</Link>
+                                         </Button>
                                           <DropdownMenu>
                                             <DropdownMenuTrigger asChild>
                                                 <Button size="icon" variant="ghost">
@@ -207,6 +221,9 @@ export default function ProfilePage() {
                                         <EditProfileDialog userProfile={userProfile}>
                                             <Button size="sm" className="flex-1">Edit Profile</Button>
                                         </EditProfileDialog>
+                                        <Button size="sm" variant="secondary" className="flex-1" asChild>
+                                            <Link href="/messages">Messages</Link>
+                                        </Button>
                                         <Button size="icon" variant="ghost" asChild>
                                             <Link href="/settings">
                                                 <Settings className="h-5 w-5" />
@@ -216,7 +233,9 @@ export default function ProfilePage() {
                                ) : (
                                    <>
                                      <FollowButton size="sm" className="flex-1" />
-                                     <Button size="sm" variant="secondary" className="flex-1">Message</Button>
+                                     <Button size="sm" variant="secondary" className="flex-1" asChild>
+                                         <Link href={`/messages?with=${username}`}>Message</Link>
+                                     </Button>
                                      <DropdownMenu>
                                         <DropdownMenuTrigger asChild>
                                             <Button size="icon" variant="ghost" className="flex-none">
