@@ -11,12 +11,6 @@ const nextConfig: NextConfig = {
   experimental: {
     optimizePackageImports: ['lucide-react', '@radix-ui/react-icons'],
   },
-  // Turbopack configuration
-  turbo: {
-    resolveAlias: {
-      // Add any alias configurations if needed
-    },
-  },
   images: {
     remotePatterns: [
       {
@@ -36,11 +30,9 @@ const nextConfig: NextConfig = {
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
   },
-  // Enable compression
+  
   compress: true,
-  // Webpack configuration (only applies when webpack is used)
   webpack: (config, { isServer, dev }) => {
-    // Only apply fallbacks for client-side production builds
     if (!dev && !isServer) {
       config.resolve.fallback = {
         ...config.resolve.fallback,

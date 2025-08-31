@@ -82,11 +82,11 @@ export default function ExplorePage() {
           <h1 className="text-3xl font-bold tracking-tighter font-headline sm:text-4xl md:text-5xl flex-shrink-0">Explore Cebu</h1>
           
           <div className={cn(
-            "transition-all duration-600 ease-[cubic-bezier(0.68,-0.55,0.265,1.55)]",
+            "transition-all duration-500 ease-out",
             isSearchExpanded ? "w-64" : "w-10"
           )}>
             <div className={cn(
-              "relative bg-background/90 backdrop-blur-md border border-border/20 rounded-full shadow-lg transition-all duration-600 ease-[cubic-bezier(0.68,-0.55,0.265,1.55)] h-10",
+              "relative bg-background/90 backdrop-blur-md border border-border/20 rounded-full shadow-lg transition-all duration-500 ease-out h-10",
               isSearchExpanded ? "px-4" : "px-2.5"
             )}>
               <Search 

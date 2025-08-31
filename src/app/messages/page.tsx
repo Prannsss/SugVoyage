@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -62,7 +62,7 @@ const conversations = [
   }
 ];
 
-export default function MessagesPage() {
+function MessagesContent() {
   const [selectedConversation, setSelectedConversation] = useState<number | null>(null);
   const [newMessage, setNewMessage] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
@@ -286,5 +286,13 @@ export default function MessagesPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function MessagesPage() {
+  return (
+    <Suspense fallback={<div className="flex items-center justify-center h-screen">Loading messages...</div>}>
+      <MessagesContent />
+    </Suspense>
   );
 }
