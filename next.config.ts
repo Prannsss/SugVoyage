@@ -10,10 +10,11 @@ const nextConfig: NextConfig = {
   },
   experimental: {
     optimizePackageImports: ['lucide-react', '@radix-ui/react-icons'],
-    turbo: {
-      resolveAlias: {
-        // Add any alias configurations if needed
-      },
+  },
+  // Turbopack configuration
+  turbo: {
+    resolveAlias: {
+      // Add any alias configurations if needed
     },
   },
   images: {
@@ -37,19 +38,18 @@ const nextConfig: NextConfig = {
   },
   // Enable compression
   compress: true,
-  // Optimize bundle for both Webpack and Turbopack
+  // Webpack configuration (only applies when webpack is used)
   webpack: (config, { isServer, dev }) => {
-    // Only apply webpack config when not using turbopack
-    if (!dev) {
-      if (!isServer) {
-        config.resolve.fallback = {
-          ...config.resolve.fallback,
-          fs: false,
-          net: false,
-          tls: false,
-        };
-      }
+    // Only apply fallbacks for client-side production builds
+    if (!dev && !isServer) {
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        fs: false,
+        net: false,
+        tls: false,
+      };
     }
+    
     return config;
   },
 };
