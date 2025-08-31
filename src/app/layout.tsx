@@ -40,6 +40,8 @@ export default function RootLayout({
         />
         <link rel="dns-prefetch" href="https://placehold.co" />
         <link rel="dns-prefetch" href="https://picsum.photos" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180" />
+  <link rel="manifest" href="/manifest.json" />
       </head>
       <body className="font-body antialiased" suppressHydrationWarning>
         <SidebarProvider>
