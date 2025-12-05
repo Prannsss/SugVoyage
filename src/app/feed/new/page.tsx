@@ -7,7 +7,7 @@ import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
-import { Upload, Send, Image as ImageIcon, X, Video, Globe, Users, AtSign, MapPin, Star, MoreHorizontal } from 'lucide-react';
+import { Upload, Send, Image as ImageIcon, X, Video, Globe, Users, AtSign, MapPin, Star, MoreHorizontal, ChevronLeft } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { cn } from '@/lib/utils';
@@ -170,8 +170,17 @@ export default function NewPostPage() {
   const PrivacyIcon = privacy === 'public' ? Globe : Users;
 
   return (
-    <div className="max-w-2xl mx-auto space-y-4 px-4 md:px-6 pt-24 md:pt-12">
-       <header className="flex items-center justify-start relative">
+    <div className="max-w-2xl mx-auto space-y-4 px-4 md:px-6 pt-4 md:pt-8 pb-24 md:pb-8">
+       <header className="flex items-center gap-3">
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          onClick={() => router.back()}
+          className="rounded-full h-10 w-10"
+          aria-label="Go back"
+        >
+          <ChevronLeft className="h-6 w-6" />
+        </Button>
         <h1 className="text-xl font-bold tracking-tight font-headline">Create Post</h1>
       </header>
       <form onSubmit={handleSubmit}>
@@ -205,7 +214,7 @@ export default function NewPostPage() {
                                 <AtSign className="h-6 w-6" />
                             </Button>
                         </SheetTrigger>
-                        <SheetContent side="top" variant="top-minimal">
+                        <SheetContent side="bottom" variant="bottom-minimal">
                             <SheetHeader>
                                 <SheetTitle>Tag People</SheetTitle>
                             </SheetHeader>
@@ -231,7 +240,7 @@ export default function NewPostPage() {
                                 <MapPin className="h-5 w-5" />
                             </Button>
                         </SheetTrigger>
-                        <SheetContent side="top" variant="top-minimal">
+                        <SheetContent side="bottom" variant="bottom-minimal">
                             <SheetHeader>
                                 <SheetTitle>Add Location</SheetTitle>
                             </SheetHeader>
@@ -258,7 +267,7 @@ export default function NewPostPage() {
                                 <Star className={cn("h-5 w-5", rating > 0 && "fill-accent")} />
                             </Button>
                         </SheetTrigger>
-                        <SheetContent side="top" variant="top-minimal">
+                        <SheetContent side="bottom" variant="bottom-minimal">
                              <SheetHeader>
                                 <SheetTitle>Rate this Place</SheetTitle>
                             </SheetHeader>

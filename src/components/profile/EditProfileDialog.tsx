@@ -108,6 +108,7 @@ export function EditProfileDialog({ userProfile, children }: EditProfileDialogPr
                 className="hidden"
                 accept="image/*"
                 onChange={handleAvatarChange}
+                aria-label="Upload profile picture"
               />
             </div>
           </div>

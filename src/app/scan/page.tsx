@@ -403,7 +403,7 @@ export default function ScanAndLearnPage() {
   }
 
   return (
-    <div className={cn("h-full w-full", photoPreview || !hasCameraPermission || isInitializing ? "pt-24 md:pt-12" : "")}>
+    <div className={cn("h-full w-full", photoPreview || !hasCameraPermission || isInitializing ? "pt-20 md:pt-8 pb-24 md:pb-8" : "")}>
       <label htmlFor="file-upload" className="sr-only">Upload image file</label>
       <input
         id="file-upload"

@@ -2,49 +2,117 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Material 3 Expressive Fonts - Roboto Family */
+@font-face {
+  font-family: 'Roboto Flex';
+  src: url('/fonts/Roboto_Flex/RobotoFlex-VariableFont_GRAD,XOPQ,XTRA,YOPQ,YTAS,YTDE,YTFI,YTLC,YTUC,opsz,slnt,wdth,wght.ttf') format('truetype-variations');
+  font-weight: 100 1000;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Roboto Mono';
+  src: url('/fonts/Roboto_Mono/static/RobotoMono-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Roboto Mono';
+  src: url('/fonts/Roboto_Mono/static/RobotoMono-Medium.ttf') format('truetype');
+  font-weight: 500;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Roboto Mono';
+  src: url('/fonts/Roboto_Mono/static/RobotoMono-Bold.ttf') format('truetype');
+  font-weight: 700;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Roboto Serif';
+  src: url('/fonts/Roboto_Serif/static/RobotoSerif-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Roboto Serif';
+  src: url('/fonts/Roboto_Serif/static/RobotoSerif-Medium.ttf') format('truetype');
+  font-weight: 500;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Roboto Serif';
+  src: url('/fonts/Roboto_Serif/static/RobotoSerif-Bold.ttf') format('truetype');
+  font-weight: 700;
+  font-display: swap;
+}
+
 @layer base {
   :root {
-    --background: 205 74% 95%;
-    --foreground: 224 71% 4%;
+    /* Blue & Purple Color Scheme */
+    --background: 210 20% 98%;
+    --foreground: 222 47% 11%;
     --card: 0 0% 100%;
-    --card-foreground: 224 71% 4%;
+    --card-foreground: 222 47% 11%;
     --popover: 0 0% 100%;
-    --popover-foreground: 224 71% 4%;
-    --primary: 207 68% 53%;
+    --popover-foreground: 222 47% 11%;
+    --primary: 217 91% 60%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 207 50% 90%;
-    --secondary-foreground: 224 71% 4%;
-    --muted: 207 50% 90%;
-    --muted-foreground: 224 71% 25%;
-    --accent: 37 90% 51%;
+    --secondary: 217 30% 94%;
+    --secondary-foreground: 217 91% 30%;
+    --muted: 220 14% 96%;
+    --muted-foreground: 220 8% 46%;
+    --accent: 271 81% 56%;
     --accent-foreground: 0 0% 100%;
-    --destructive: 0 84.2% 60.2%;
+    --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 98%;
-    --border: 207 40% 85%;
-    --input: 207 40% 85%;
-    --ring: 207 68% 53%;
-    --radius: 0.75rem;
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 217 91% 60%;
+    --radius: 1.25rem;
+    
+    /* Material 3 Expressive specific */
+    --surface-tint: 217 91% 60%;
+    --surface-container: 220 14% 96%;
+    --surface-container-high: 220 14% 93%;
+    --surface-container-highest: 220 14% 90%;
+    --on-surface-variant: 220 8% 46%;
+    --outline: 220 10% 75%;
+    --outline-variant: 220 10% 85%;
   }
   .dark {
-    --background: 207 30% 12%;
-    --foreground: 205 74% 95%;
-    --card: 207 30% 15%;
-    --card-foreground: 205 74% 95%;
-    --popover: 207 30% 12%;
-    --popover-foreground: 205 74% 95%;
-    --primary: 207 68% 53%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 207 20% 25%;
-    --secondary-foreground: 205 74% 95%;
-    --muted: 207 20% 25%;
-    --muted-foreground: 205 74% 75%;
-    --accent: 37 90% 51%;
-    --accent-foreground: 0 0% 100%;
-    --destructive: 0 62.8% 30.6%;
+    --background: 222 47% 11%;
+    --foreground: 210 20% 98%;
+    --card: 222 40% 14%;
+    --card-foreground: 210 20% 98%;
+    --popover: 222 40% 14%;
+    --popover-foreground: 210 20% 98%;
+    --primary: 217 91% 65%;
+    --primary-foreground: 217 91% 15%;
+    --secondary: 217 30% 25%;
+    --secondary-foreground: 217 91% 90%;
+    --muted: 220 30% 20%;
+    --muted-foreground: 220 14% 65%;
+    --accent: 271 81% 65%;
+    --accent-foreground: 271 81% 15%;
+    --destructive: 0 62% 30%;
     --destructive-foreground: 0 0% 98%;
-    --border: 207 20% 25%;
-    --input: 207 20% 25%;
-    --ring: 207 68% 53%;
+    --border: 220 30% 20%;
+    --input: 220 30% 20%;
+    --ring: 217 91% 65%;
+    
+    --surface-tint: 217 91% 65%;
+    --surface-container: 220 30% 16%;
+    --surface-container-high: 220 30% 20%;
+    --surface-container-highest: 220 30% 24%;
+    --on-surface-variant: 220 14% 65%;
+    --outline: 220 10% 45%;
+    --outline-variant: 220 10% 35%;
   }
 }
 
@@ -54,6 +122,36 @@
     -webkit-tap-highlight-color: transparent;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-body antialiased;
   }
+  
+  /* Material 3 Expressive Typography */
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-headline;
+  }
+}
+
+/* Material 3 Expressive Loader Animation */
+@keyframes m3-spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.m3-loader-spin {
+  animation: m3-spin 1.4s linear infinite;
+}
+
+/* PIN Shake Animation */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-8px); }
+  20%, 40%, 60%, 80% { transform: translateX(8px); }
+}
+
+.animate-shake {
+  animation: shake 0.5s ease-in-out;
 }

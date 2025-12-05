@@ -82,7 +82,7 @@ export default function ItineraryBuilderPage() {
   };
 
   return (
-    <div className="space-y-8 px-4 md:px-6 pt-24 md:pt-12" suppressHydrationWarning>
+    <div className="space-y-8 px-4 md:px-6 pt-20 md:pt-8 pb-24 md:pb-8" suppressHydrationWarning>
       <header className="space-y-2">
         <h1 className="text-3xl font-bold tracking-tighter font-headline sm:text-4xl md:text-5xl">Itinerary Builder</h1>
         <p className="text-muted-foreground md:text-xl/relaxed">

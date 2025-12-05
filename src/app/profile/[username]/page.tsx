@@ -119,7 +119,7 @@ export default function ProfilePage() {
 
     if (!userProfile) {
         return (
-             <div className="flex flex-col items-center justify-center h-full text-center p-8 pt-24 md:pt-12">
+             <div className="flex flex-col items-center justify-center h-full text-center p-8 pt-20 md:pt-8 pb-24 md:pb-8">
                 <h1 className="text-2xl font-bold">User not found</h1>
                 <p className="text-muted-foreground">Sorry, we couldn't find the profile you're looking for.</p>
                 <Button asChild variant="link" className="mt-4">
@@ -131,7 +131,7 @@ export default function ProfilePage() {
 
     return (
         <div className="flex flex-col">
-            <div className="px-4 md:px-6 pt-24 md:pt-12 space-y-4">
+            <div className="px-4 md:px-6 pt-20 md:pt-8 pb-24 md:pb-8 space-y-4">
                 <header>
                     <div className="flex flex-col md:flex-row items-center gap-4 md:gap-8 w-full">
                         <Avatar className="h-24 w-24 md:h-36 md:w-36 border-4 border-primary shrink-0">

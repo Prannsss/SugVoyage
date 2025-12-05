@@ -2,7 +2,6 @@ import type { NextConfig } from 'next';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-expect-error - next-pwa has no ESM types for Next 15 yet; runtime is fine
 import withPWA from 'next-pwa';
-import path from 'path';
 
 const baseConfig: NextConfig = {
   /* config options here */
@@ -14,6 +13,12 @@ const baseConfig: NextConfig = {
   },
   experimental: {
     optimizePackageImports: ['lucide-react', '@radix-ui/react-icons'],
+  },
+  // Turbopack configuration (replaces experimental.turbo)
+  turbopack: {
+    resolveAlias: {
+      // Add any path aliases here if needed
+    },
   },
   images: {
     remotePatterns: [
@@ -36,18 +41,6 @@ const baseConfig: NextConfig = {
   },
   
   compress: true,
-  webpack: (config, { isServer, dev }) => {
-    if (!dev && !isServer) {
-      config.resolve.fallback = {
-        ...config.resolve.fallback,
-        fs: false,
-        net: false,
-        tls: false,
-      };
-    }
-    
-    return config;
-  },
 };
 
 const isProd = process.env.NODE_ENV === 'production';

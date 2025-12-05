@@ -4,8 +4,9 @@ import { Toaster } from '@/components/ui/toaster';
 import ConditionalHeader from '@/components/layout/ConditionalHeader';
 import ConditionalBottomNav from '@/components/layout/ConditionalBottomNav';
 import ConditionalMain from '@/components/layout/ConditionalMain';
-import DesktopNav from '@/components/layout/DesktopNav';
+import ConditionalDesktopNav from '@/components/layout/ConditionalDesktopNav';
 import { SidebarProvider } from '@/components/ui/sidebar';
+import { PinGuardProvider } from '@/components/auth/PinGuardProvider';
 
 export const metadata: Metadata = {
   title: 'SugVoyage',
@@ -32,29 +33,23 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link
-          href="https://fonts.googleapis.com/css2?family=PT+Sans:ital,wght@0,400;0,700;1,400;1,700&display=swap"
-          rel="stylesheet"
-        />
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180" />
         <link rel="dns-prefetch" href="https://placehold.co" />
         <link rel="dns-prefetch" href="https://picsum.photos" />
-  <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180" />
-  <link rel="manifest" href="/manifest.json" />
+        <link rel="manifest" href="/manifest.json" />
       </head>
       <body className="font-body antialiased" suppressHydrationWarning>
         <SidebarProvider>
-          <div className="relative flex min-h-screen w-full flex-col">
-            <DesktopNav />
-            <div className="flex flex-1 flex-col md:pl-64" suppressHydrationWarning>
-              <ConditionalHeader />
+          <PinGuardProvider>
+            <div className="relative flex min-h-screen w-full flex-col">
+              <ConditionalDesktopNav />
               <ConditionalMain>
+                <ConditionalHeader />
                 {children}
               </ConditionalMain>
+              <ConditionalBottomNav />
             </div>
-            <ConditionalBottomNav />
-          </div>
+          </PinGuardProvider>
         </SidebarProvider>
         <Toaster />
       </body>

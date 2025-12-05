@@ -4,7 +4,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, Map, User, BookOpen, Settings } from 'lucide-react';
+import { Home, MapPin, User, BookOpen, Settings, CalendarDays } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
     Sidebar,
@@ -19,7 +19,8 @@ import { Logo } from '../Logo';
 
 const navItems = [
   { href: '/', label: 'Explore', icon: Home },
-  { href: '/itinerary', label: 'Itinerary', icon: Map },
+  { href: '/geolocation', label: 'Map', icon: MapPin },
+  { href: '/itinerary', label: 'Itinerary', icon: CalendarDays },
   { href: '/feed', label: 'Feed', icon: BookOpen },
   { href: '/profile/alex_doe', label: 'Profile', icon: User },
 ];

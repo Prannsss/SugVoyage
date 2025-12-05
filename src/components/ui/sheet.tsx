@@ -38,6 +38,7 @@ const sheetVariants = cva(
       variant: {
         default: "",
         "top-minimal": "top-4 mx-auto max-w-xl rounded-b-lg border-x border-b",
+        "bottom-minimal": "bottom-4 mx-auto max-w-xl rounded-t-lg border-x border-t",
       },
       side: {
         top: "inset-x-0 top-0 border-b data-[state=closed]:slide-out-to-top data-[state=open]:slide-in-from-top",

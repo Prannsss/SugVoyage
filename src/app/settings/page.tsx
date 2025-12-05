@@ -32,6 +32,12 @@ import {
   Info,
   ChevronRight,
   Settings as SettingsIcon,
+  Eye,
+  EyeOff,
+  Copy,
+  Check,
+  Key,
+  Delete,
 } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
@@ -69,6 +75,15 @@ import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { Label } from '@/components/ui/label';
 import { usePermission } from '@/hooks/use-permission';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { cn } from '@/lib/utils';
 
 const SettingsItem = ({
   icon,
@@ -124,12 +139,36 @@ export default function SettingsPage() {
     const [isNearbySheetOpen, setIsNearbySheetOpen] = React.useState(false);
     const { hasPermission: cameraPermission, setPermission: setCameraPermission } = usePermission('camera', true);
     const [isCameraSheetOpen, setIsCameraSheetOpen] = React.useState(false);
+    
+    // Gemini API Key state
+    const [geminiApiKey, setGeminiApiKey] = React.useState("");
+    const [showApiKey, setShowApiKey] = React.useState(false);
+    const [isApiKeyCopied, setIsApiKeyCopied] = React.useState(false);
+    const [isApiKeySheetOpen, setIsApiKeySheetOpen] = React.useState(false);
+
+    // Two-Factor Authentication (PIN) state
+    const [tfaEnabled, setTfaEnabled] = React.useState(false);
+    const [isPinDialogOpen, setIsPinDialogOpen] = React.useState(false);
+    const [pinStep, setPinStep] = React.useState<'create' | 'confirm' | 'disable'>('create');
+    const [pin, setPin] = React.useState<string[]>([]);
+    const [confirmPin, setConfirmPin] = React.useState<string[]>([]);
+    const [pinError, setPinError] = React.useState<string | null>(null);
+    const [isShaking, setIsShaking] = React.useState(false);
+    const PIN_LENGTH = 4;
 
     React.useEffect(() => {
         const savedVoice = localStorage.getItem('setting_audioVoice');
         if (savedVoice) {
             setAudioVoice(savedVoice);
         }
+        // Load saved Gemini API key
+        const savedApiKey = localStorage.getItem('GEMINI_API_KEY');
+        if (savedApiKey) {
+            setGeminiApiKey(savedApiKey);
+        }
+        // Load TFA state
+        const tfaState = localStorage.getItem('tfa_enabled') === 'true';
+        setTfaEnabled(tfaState);
     }, []);
 
     const handleAudioVoiceChange = (newVoice: string) => {
@@ -202,9 +241,190 @@ export default function SettingsPage() {
         });
     };
 
+    // Gemini API Key handlers
+    const handleSaveApiKey = () => {
+        if (geminiApiKey.trim()) {
+            localStorage.setItem('GEMINI_API_KEY', geminiApiKey.trim());
+            toast({
+                title: "API Key Saved",
+                description: "Your Gemini API key has been saved locally.",
+            });
+        } else {
+            localStorage.removeItem('GEMINI_API_KEY');
+            toast({
+                title: "API Key Removed",
+                description: "Your Gemini API key has been removed.",
+            });
+        }
+        setIsApiKeySheetOpen(false);
+    };
+
+    const handleCopyApiKey = async () => {
+        if (geminiApiKey) {
+            await navigator.clipboard.writeText(geminiApiKey);
+            setIsApiKeyCopied(true);
+            toast({
+                title: "Copied!",
+                description: "API key copied to clipboard.",
+            });
+            setTimeout(() => setIsApiKeyCopied(false), 2000);
+        }
+    };
+
+    const getMaskedApiKey = () => {
+        if (!geminiApiKey) return "Not set";
+        if (geminiApiKey.length <= 8) return "••••••••";
+        return `${geminiApiKey.slice(0, 4)}${"•".repeat(Math.min(geminiApiKey.length - 8, 20))}${geminiApiKey.slice(-4)}`;
+    };
+
+    // PIN Hash function
+    const hashPin = async (pinValue: string): Promise<string> => {
+        const encoder = new TextEncoder();
+        const data = encoder.encode(pinValue + 'sugvoyage_salt');
+        const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    };
+
+    // Handle TFA toggle
+    const handleTfaToggle = (checked: boolean) => {
+        if (checked) {
+            // Opening PIN creation dialog
+            setPinStep('create');
+            setPin([]);
+            setConfirmPin([]);
+            setPinError(null);
+            setIsPinDialogOpen(true);
+        } else {
+            // Opening PIN verification to disable
+            setPinStep('disable');
+            setPin([]);
+            setPinError(null);
+            setIsPinDialogOpen(true);
+        }
+    };
+
+    // Handle PIN number press
+    const handlePinNumberPress = (num: string) => {
+        const currentPin = pinStep === 'confirm' ? confirmPin : pin;
+        const setCurrentPin = pinStep === 'confirm' ? setConfirmPin : setPin;
+
+        if (currentPin.length < PIN_LENGTH) {
+            const newPin = [...currentPin, num];
+            setCurrentPin(newPin);
+            setPinError(null);
+
+            // Auto-advance when PIN is complete
+            if (newPin.length === PIN_LENGTH) {
+                if (pinStep === 'create') {
+                    // Move to confirm step
+                    setTimeout(() => {
+                        setPinStep('confirm');
+                    }, 200);
+                } else if (pinStep === 'confirm') {
+                    // Verify PINs match
+                    handleConfirmPin(newPin);
+                } else if (pinStep === 'disable') {
+                    // Verify PIN to disable
+                    handleDisablePin(newPin);
+                }
+            }
+        }
+    };
+
+    // Handle PIN delete
+    const handlePinDelete = () => {
+        const currentPin = pinStep === 'confirm' ? confirmPin : pin;
+        const setCurrentPin = pinStep === 'confirm' ? setConfirmPin : setPin;
+
+        if (currentPin.length > 0) {
+            setCurrentPin(currentPin.slice(0, -1));
+            setPinError(null);
+        }
+    };
+
+    // Confirm PIN creation
+    const handleConfirmPin = async (confirmedPin: string[]) => {
+        const originalPin = pin.join('');
+        const confirmed = confirmedPin.join('');
+
+        if (originalPin === confirmed) {
+            // PINs match - save and enable TFA
+            const pinHash = await hashPin(originalPin);
+            localStorage.setItem('tfa_pin_hash', pinHash);
+            localStorage.setItem('tfa_enabled', 'true');
+            // Mark current session as verified so user doesn't need to enter PIN immediately
+            sessionStorage.setItem('pin_verified', 'true');
+            setTfaEnabled(true);
+            setIsPinDialogOpen(false);
+            toast({
+                title: "PIN Created",
+                description: "Two-factor authentication is now enabled. You'll need to enter this PIN when opening the app.",
+            });
+        } else {
+            // PINs don't match
+            setIsShaking(true);
+            setPinError("PINs don't match. Please try again.");
+            setTimeout(() => {
+                setIsShaking(false);
+                setConfirmPin([]);
+            }, 500);
+        }
+    };
+
+    // Disable PIN
+    const handleDisablePin = async (enteredPin: string[]) => {
+        const entered = enteredPin.join('');
+        const enteredHash = await hashPin(entered);
+        const storedHash = localStorage.getItem('tfa_pin_hash');
+
+        if (enteredHash === storedHash) {
+            // PIN correct - disable TFA
+            localStorage.removeItem('tfa_pin_hash');
+            localStorage.setItem('tfa_enabled', 'false');
+            sessionStorage.removeItem('pin_verified');
+            setTfaEnabled(false);
+            setIsPinDialogOpen(false);
+            toast({
+                title: "PIN Removed",
+                description: "Two-factor authentication has been disabled.",
+            });
+        } else {
+            // PIN incorrect
+            setIsShaking(true);
+            setPinError("Incorrect PIN. Please try again.");
+            setTimeout(() => {
+                setIsShaking(false);
+                setPin([]);
+            }, 500);
+        }
+    };
+
+    // Reset PIN dialog
+    const handlePinDialogClose = () => {
+        setIsPinDialogOpen(false);
+        setPin([]);
+        setConfirmPin([]);
+        setPinError(null);
+        setPinStep('create');
+    };
+
+    // Number pad for PIN
+    const numberPad = [
+        ['1', '2', '3'],
+        ['4', '5', '6'],
+        ['7', '8', '9'],
+        ['', '0', 'delete'],
+    ];
+
+    // Get current PIN array for display
+    const getCurrentPinDisplay = () => {
+        return pinStep === 'confirm' ? confirmPin : pin;
+    };
+
 
   return (
-    <div className="max-w-4xl mx-auto px-4 md:px-6 pt-24 md:pt-12">
+    <div className="max-w-4xl mx-auto px-4 md:px-6 pt-20 md:pt-8 pb-24 md:pb-8">
         <div className="divide-y space-y-6">
             <SettingsSection title="Account & Security">
                  <Sheet onOpenChange={(open) => !open && (setIsCodeSent(false), form.reset())}>
@@ -252,9 +472,98 @@ export default function SettingsPage() {
                         </Form>
                     </SheetContent>
                 </Sheet>
-                <SettingsItem icon={ShieldCheck} title="Two-factor authentication">
-                    <Switch id="tfa-switch" />
+                <SettingsItem icon={ShieldCheck} title="Two-factor authentication" description={tfaEnabled ? "PIN enabled" : "Protect your app with a PIN"}>
+                    <Switch id="tfa-switch" checked={tfaEnabled} onCheckedChange={handleTfaToggle} />
                 </SettingsItem>
+                
+                {/* PIN Setup/Disable Dialog */}
+                <Dialog open={isPinDialogOpen} onOpenChange={handlePinDialogClose}>
+                    <DialogContent className="sm:max-w-md">
+                        <DialogHeader>
+                            <DialogTitle>
+                                {pinStep === 'create' && 'Create PIN'}
+                                {pinStep === 'confirm' && 'Confirm PIN'}
+                                {pinStep === 'disable' && 'Enter PIN to Disable'}
+                            </DialogTitle>
+                            <DialogDescription>
+                                {pinStep === 'create' && 'Create a 4-digit PIN to protect your app. You\'ll need to enter this PIN when opening SugVoyage.'}
+                                {pinStep === 'confirm' && 'Re-enter your PIN to confirm.'}
+                                {pinStep === 'disable' && 'Enter your current PIN to disable two-factor authentication.'}
+                            </DialogDescription>
+                        </DialogHeader>
+
+                        {/* PIN Dots */}
+                        <div 
+                            className={cn(
+                                "flex justify-center gap-4 py-6",
+                                isShaking && "animate-shake"
+                            )}
+                        >
+                            {Array.from({ length: PIN_LENGTH }).map((_, index) => (
+                                <div
+                                    key={index}
+                                    className={cn(
+                                        "w-4 h-4 rounded-full border-2 transition-all duration-200",
+                                        index < getCurrentPinDisplay().length
+                                            ? "bg-primary border-primary scale-110"
+                                            : "border-muted-foreground/30"
+                                    )}
+                                />
+                            ))}
+                        </div>
+
+                        {/* Error Message */}
+                        {pinError && (
+                            <p className="text-destructive text-sm text-center animate-in fade-in">
+                                {pinError}
+                            </p>
+                        )}
+
+                        {/* Number Pad */}
+                        <div className="grid gap-2 py-2">
+                            {numberPad.map((row, rowIndex) => (
+                                <div key={rowIndex} className="flex justify-center gap-2">
+                                    {row.map((item, colIndex) => {
+                                        if (item === '') {
+                                            return <div key={colIndex} className="w-16 h-14" />;
+                                        }
+                                        if (item === 'delete') {
+                                            return (
+                                                <Button
+                                                    key={colIndex}
+                                                    variant="ghost"
+                                                    className="w-16 h-14 text-lg"
+                                                    onClick={handlePinDelete}
+                                                    disabled={getCurrentPinDisplay().length === 0}
+                                                >
+                                                    <Delete className="w-5 h-5" />
+                                                </Button>
+                                            );
+                                        }
+                                        return (
+                                            <Button
+                                                key={colIndex}
+                                                variant="outline"
+                                                className="w-16 h-14 text-xl font-semibold hover:bg-primary hover:text-primary-foreground transition-colors"
+                                                onClick={() => handlePinNumberPress(item)}
+                                                disabled={getCurrentPinDisplay().length >= PIN_LENGTH}
+                                            >
+                                                {item}
+                                            </Button>
+                                        );
+                                    })}
+                                </div>
+                            ))}
+                        </div>
+
+                        <DialogFooter className="sm:justify-center">
+                            <Button variant="outline" onClick={handlePinDialogClose}>
+                                Cancel
+                            </Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
+                
                  <Sheet>
                     <SheetTrigger asChild>
                         <div className="cursor-pointer">
@@ -292,6 +601,96 @@ export default function SettingsPage() {
                             <SheetClose asChild>
                                 <Button className="w-full">Done</Button>
                             </SheetClose>
+                        </SheetFooter>
+                    </SheetContent>
+                </Sheet>
+            </SettingsSection>
+            
+            <SettingsSection title="AI Features">
+                <Sheet open={isApiKeySheetOpen} onOpenChange={setIsApiKeySheetOpen}>
+                    <SheetTrigger asChild>
+                        <div className="cursor-pointer">
+                            <SettingsItem 
+                                icon={Key} 
+                                title="Gemini API Key" 
+                                description={geminiApiKey ? getMaskedApiKey() : "Add your free API key for AI features"}
+                            >
+                                <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                            </SettingsItem>
+                        </div>
+                    </SheetTrigger>
+                    <SheetContent side="bottom" className="rounded-t-2xl">
+                        <SheetHeader className="text-left">
+                            <SheetTitle>Gemini API Key</SheetTitle>
+                            <SheetDescription>
+                                Enter your free Gemini API key to use AI features like itinerary generation, 
+                                landmark scanning, and more. Get your free key at{' '}
+                                <a 
+                                    href="https://aistudio.google.com/apikey" 
+                                    target="_blank" 
+                                    rel="noopener noreferrer"
+                                    className="text-primary underline"
+                                >
+                                    Google AI Studio
+                                </a>
+                            </SheetDescription>
+                        </SheetHeader>
+                        <div className="py-4 space-y-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="gemini-api-key">API Key</Label>
+                                <div className="flex gap-2">
+                                    <div className="relative flex-1">
+                                        <Input
+                                            id="gemini-api-key"
+                                            type={showApiKey ? "text" : "password"}
+                                            placeholder="Enter your Gemini API key"
+                                            value={geminiApiKey}
+                                            onChange={(e) => setGeminiApiKey(e.target.value)}
+                                            className="pr-20"
+                                        />
+                                        <div className="absolute right-2 top-1/2 -translate-y-1/2 flex gap-1">
+                                            <Button
+                                                type="button"
+                                                variant="ghost"
+                                                size="icon"
+                                                className="h-7 w-7"
+                                                onClick={() => setShowApiKey(!showApiKey)}
+                                            >
+                                                {showApiKey ? (
+                                                    <EyeOff className="h-4 w-4 text-muted-foreground" />
+                                                ) : (
+                                                    <Eye className="h-4 w-4 text-muted-foreground" />
+                                                )}
+                                            </Button>
+                                            <Button
+                                                type="button"
+                                                variant="ghost"
+                                                size="icon"
+                                                className="h-7 w-7"
+                                                onClick={handleCopyApiKey}
+                                                disabled={!geminiApiKey}
+                                            >
+                                                {isApiKeyCopied ? (
+                                                    <Check className="h-4 w-4 text-green-500" />
+                                                ) : (
+                                                    <Copy className="h-4 w-4 text-muted-foreground" />
+                                                )}
+                                            </Button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <p className="text-xs text-muted-foreground">
+                                    Your API key is stored locally on your device and never sent to our servers.
+                                </p>
+                            </div>
+                        </div>
+                        <SheetFooter className="grid grid-cols-2 gap-4">
+                            <SheetClose asChild>
+                                <Button variant="outline">Cancel</Button>
+                            </SheetClose>
+                            <Button onClick={handleSaveApiKey}>
+                                {geminiApiKey ? "Save Key" : "Remove Key"}
+                            </Button>
                         </SheetFooter>
                     </SheetContent>
                 </Sheet>

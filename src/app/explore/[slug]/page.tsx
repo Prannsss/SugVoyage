@@ -10,7 +10,8 @@ import { getPlaceDetails, type GetPlaceDetailsOutput } from '@/ai/flows/get-plac
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Star, UserCircle, Loader2, Map, Milestone, ExternalLink } from 'lucide-react';
+import { Star, UserCircle, Map, Milestone, ExternalLink } from 'lucide-react';
+import { M3Loader } from '@/components/ui/m3-loader';
 
 export default function PlaceDetailsPage() {
   const params = useParams();
@@ -32,7 +33,7 @@ export default function PlaceDetailsPage() {
 
   if (!place) {
     return (
-      <div className="text-center py-20 px-4 md:px-6 pt-24 md:pt-12">
+      <div className="text-center py-20 px-4 md:px-6 pt-20 md:pt-8 pb-24 md:pb-8">
         <h1 className="text-2xl font-bold">Place not found</h1>
         <p className="text-muted-foreground">Sorry, we couldn't find the place you're looking for.</p>
       </div>
@@ -40,7 +41,7 @@ export default function PlaceDetailsPage() {
   }
 
   return (
-    <div className="space-y-8 px-4 md:px-6 pt-20 md:pt-8">
+    <div className="space-y-8 px-4 md:px-6 pt-20 md:pt-8 pb-24 md:pb-8">
       <header className="relative h-96 w-full -mt-8">
         <Image
           src={place.image}
@@ -60,7 +61,7 @@ export default function PlaceDetailsPage() {
 
       {isLoading && (
         <div className="flex flex-col items-center justify-center gap-4 text-center rounded-lg p-8">
-            <Loader2 className="h-12 w-12 animate-spin text-primary" />
+            <M3Loader size="lg" />
             <h3 className="text-xl font-semibold">Loading Details...</h3>
             <p className="text-muted-foreground">Fetching history and reviews for {place.title}.</p>
         </div>
@@ -101,7 +102,7 @@ export default function PlaceDetailsPage() {
                         <CardTitle>Visitor Reviews</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-6">
-                        {details.reviews.map((review, index) => (
+                        {details.reviews.map((review: { author: string; rating: number; comment: string }, index: number) => (
                             <div key={index} className="space-y-2">
                                 <div className="flex items-center gap-2">
                                     <UserCircle className="h-6 w-6 text-muted-foreground"/>

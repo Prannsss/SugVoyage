@@ -3,13 +3,13 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Camera, Home, Map, BookOpen, User } from 'lucide-react';
+import { Camera, Home, MapPin, BookOpen, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useMemo, useEffect, useState } from 'react';
 
 const navItems = [
   { href: '/', label: 'Explore', icon: Home },
-  { href: '/itinerary', label: 'Itinerary', icon: Map },
+  { href: '/geolocation', label: 'Map', icon: MapPin },
   { href: '/scan', label: 'Scan', icon: Camera },
   { href: '/feed', label: 'Feed', icon: BookOpen },
   { href: '/profile/alex_doe', label: 'Profile', icon: User },
@@ -33,9 +33,9 @@ export default function BottomNav() {
   , [pathname, isClient]);
 
   return (
-    <nav className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50 md:hidden" suppressHydrationWarning>
-      <div className="bg-background/90 backdrop-blur-md border border-border/20 rounded-full shadow-lg px-6 py-3">
-        <div className="flex items-center justify-center space-x-8">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 md:hidden" suppressHydrationWarning>
+      <div className="bg-background/90 backdrop-blur-md border-t border-border/20 shadow-lg px-6 py-3">
+        <div className="flex items-center justify-around max-w-md mx-auto">
           {navItemsWithActive.map((item) => (
             <Link
               key={item.href}

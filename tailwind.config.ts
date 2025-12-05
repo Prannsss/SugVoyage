@@ -20,9 +20,10 @@ export default {
     },
     extend: {
       fontFamily: {
-        body: ['PT Sans', 'sans-serif'],
-        headline: ['PT Sans', 'sans-serif'],
-        code: ['monospace'],
+        body: ['Roboto Flex', 'system-ui', 'sans-serif'],
+        headline: ['Roboto Serif', 'Georgia', 'serif'],
+        code: ['Roboto Mono', 'monospace'],
+        sans: ['Roboto Flex', 'system-ui', 'sans-serif'],
       },
       colors: {
         background: 'hsl(var(--background))',
