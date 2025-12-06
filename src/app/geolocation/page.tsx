@@ -1,62 +1,72 @@
-"use client";
+'use client';
 
-import { useState, useMemo, useRef } from "react";
-import Image from "next/image";
-import Link from "next/link";
-import Map, {
-  Marker,
-  Popup,
-  NavigationControl,
-  FullscreenControl,
-  GeolocateControl,
-} from "react-map-gl/maplibre";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Slider } from "@/components/ui/slider";
+import { useState, useMemo, useRef, useEffect } from 'react';
+import Image from 'next/image';
+import Link from 'next/link';
+import Map, { Marker, Popup, NavigationControl, FullscreenControl, GeolocateControl, Source, Layer } from 'react-map-gl/maplibre';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Slider } from '@/components/ui/slider';
 import {
   Sheet,
   SheetContent,
   SheetHeader,
   SheetTitle,
-} from "@/components/ui/sheet";
+} from '@/components/ui/sheet';
 import {
-  Umbrella,
-  Utensils,
-  Landmark,
-  Plus,
-  Minus,
+  Umbrella, 
+  Utensils, 
+  Landmark, 
+  Plus, 
+  Minus, 
   LocateFixed,
   Star,
   Navigation,
   CircleDot,
   Search,
   X,
-  ArrowLeft,
-} from "lucide-react";
-import { cn } from "@/lib/utils";
-import "maplibre-gl/dist/maplibre-gl.css";
+  ArrowLeft
+} from 'lucide-react';
+import { cn } from '@/lib/utils';
+import 'maplibre-gl/dist/maplibre-gl.css';
+
+const cebuPolyline = {
+  type: 'Feature',
+  geometry: {
+    type: 'LineString',
+    coordinates: [
+      [124.05, 11.25],
+      [123.90, 11.20],
+      [123.70, 10.80],
+      [123.50, 10.30],
+      [123.40, 9.90],
+      [123.30, 9.50],
+      [123.25, 9.40],
+      [123.40, 9.50],
+      [123.60, 10.00],
+      [123.80, 10.50],
+      [124.00, 11.00],
+      [124.05, 11.25],
+    ]
+  }
+};
 
 function slugify(text: string) {
   return text
     .toString()
     .toLowerCase()
-    .replace(/\s+/g, "-")
-    .replace(/[^\w-]+/g, "")
-    .replace(/--+/g, "-")
-    .replace(/^-+/, "")
-    .replace(/-+$/, "");
+    .replace(/\s+/g, '-')
+    .replace(/[^\w-]+/g, '')
+    .replace(/--+/g, '-')
+    .replace(/^-+/, '')
+    .replace(/-+$/, '');
 }
 
 // Category filters
 const filterCategories = [
-  { id: "beaches", label: "Beaches", icon: Umbrella, color: "bg-cyan-500" },
-  {
-    id: "restaurants",
-    label: "Restaurants",
-    icon: Utensils,
-    color: "bg-accent",
-  },
-  { id: "history", label: "History", icon: Landmark, color: "bg-amber-500" },
+  { id: 'beaches', label: 'Beaches', icon: Umbrella, color: 'bg-cyan-500' },
+  { id: 'restaurants', label: 'Restaurants', icon: Utensils, color: 'bg-accent' },
+  { id: 'history', label: 'History', icon: Landmark, color: 'bg-amber-500' },
 ];
 
 // Map markers/places data with distance from center (Cebu City)
@@ -64,152 +74,116 @@ const mapPlaces = [
   {
     id: 1,
     title: "Magellan's Cross",
-    description:
-      "A Christian cross planted by Portuguese and Spanish explorers as ordered by Ferdinand Magellan upon arriving in Cebu.",
+    description: 'A Christian cross planted by Portuguese and Spanish explorers as ordered by Ferdinand Magellan upon arriving in Cebu.',
     distance: 2.5,
-    distanceText: "2.5 km away",
+    distanceText: '2.5 km away',
     rating: 4.7,
-    image: "https://picsum.photos/400/300?random=300",
-    hint: "historic landmark",
-    category: "history",
+    image: 'https://picsum.photos/400/300?random=300',
+    hint: 'historic landmark',
+    category: 'history',
     position: { lat: 10.2928, lng: 123.9021 },
     icon: Landmark,
-    iconBg: "bg-primary",
+    iconBg: 'bg-primary',
   },
   {
     id: 2,
-    title: "Lantaw Floating Restaurant",
-    description:
-      "Famous seafood restaurant with stunning views of the Mactan Channel. Known for fresh catch and Filipino cuisine.",
+    title: 'Lantaw Floating Restaurant',
+    description: 'Famous seafood restaurant with stunning views of the Mactan Channel. Known for fresh catch and Filipino cuisine.',
     distance: 4.2,
-    distanceText: "4.2 km away",
+    distanceText: '4.2 km away',
     rating: 4.5,
-    image: "https://picsum.photos/400/300?random=301",
-    hint: "restaurant seafood",
-    category: "restaurants",
+    image: 'https://picsum.photos/400/300?random=301',
+    hint: 'restaurant seafood',
+    category: 'restaurants',
     position: { lat: 10.2839, lng: 123.9333 },
     icon: Utensils,
-    iconBg: "bg-accent",
+    iconBg: 'bg-accent',
   },
   {
     id: 3,
-    title: "Mactan Beach Resort",
-    description:
-      "Beautiful white sand beach with crystal clear waters. Perfect for swimming, snorkeling, and water activities.",
+    title: 'Mactan Beach Resort',
+    description: 'Beautiful white sand beach with crystal clear waters. Perfect for swimming, snorkeling, and water activities.',
     distance: 8.1,
-    distanceText: "8.1 km away",
+    distanceText: '8.1 km away',
     rating: 4.8,
-    image: "https://picsum.photos/400/300?random=302",
-    hint: "beach resort",
-    category: "beaches",
+    image: 'https://picsum.photos/400/300?random=302',
+    hint: 'beach resort',
+    category: 'beaches',
     position: { lat: 10.2625, lng: 123.9919 },
     icon: Umbrella,
-    iconBg: "bg-cyan-500",
+    iconBg: 'bg-cyan-500',
   },
   {
     id: 4,
-    title: "House of Lechon",
-    description:
-      "The best place to try authentic Cebu lechon (roasted pig). A must-visit for food lovers.",
+    title: 'House of Lechon',
+    description: 'The best place to try authentic Cebu lechon (roasted pig). A must-visit for food lovers.',
     distance: 1.2,
-    distanceText: "1.2 km away",
+    distanceText: '1.2 km away',
     rating: 4.6,
-    image: "https://picsum.photos/400/300?random=303",
-    hint: "filipino food",
-    category: "restaurants",
+    image: 'https://picsum.photos/400/300?random=303',
+    hint: 'filipino food',
+    category: 'restaurants',
     position: { lat: 10.3088, lng: 123.9076 },
     icon: Utensils,
-    iconBg: "bg-accent",
+    iconBg: 'bg-accent',
   },
   {
     id: 5,
-    title: "Fort San Pedro",
-    description:
-      "The oldest and smallest fort in the Philippines, built by Spanish conquistador Miguel López de Legazpi.",
+    title: 'Fort San Pedro',
+    description: 'The oldest and smallest fort in the Philippines, built by Spanish conquistador Miguel López de Legazpi.',
     distance: 3.0,
-    distanceText: "3.0 km away",
+    distanceText: '3.0 km away',
     rating: 4.4,
-    image: "https://picsum.photos/400/300?random=304",
-    hint: "historic fort",
-    category: "history",
+    image: 'https://picsum.photos/400/300?random=304',
+    hint: 'historic fort',
+    category: 'history',
     position: { lat: 10.2925, lng: 123.9048 },
     icon: Landmark,
-    iconBg: "bg-primary",
+    iconBg: 'bg-primary',
   },
   {
     id: 6,
-    title: "Shangri-La Beach",
-    description:
-      "Luxurious beachfront resort with pristine white sand and world-class amenities.",
+    title: 'Shangri-La Beach',
+    description: 'Luxurious beachfront resort with pristine white sand and world-class amenities.',
     distance: 12,
-    distanceText: "12 km away",
+    distanceText: '12 km away',
     rating: 4.9,
-    image: "https://picsum.photos/400/300?random=305",
-    hint: "luxury beach",
-    category: "beaches",
+    image: 'https://picsum.photos/400/300?random=305',
+    hint: 'luxury beach',
+    category: 'beaches',
     position: { lat: 10.2789, lng: 124.0183 },
     icon: Umbrella,
-    iconBg: "bg-cyan-500",
+    iconBg: 'bg-cyan-500',
   },
   {
     id: 7,
-    title: "Zubuchon",
-    description:
-      "Award-winning lechon restaurant, voted as having the best pig in the world by Anthony Bourdain.",
+    title: 'Zubuchon',
+    description: 'Award-winning lechon restaurant, voted as having the best pig in the world by Anthony Bourdain.',
     distance: 5.5,
-    distanceText: "5.5 km away",
+    distanceText: '5.5 km away',
     rating: 4.8,
-    image: "https://picsum.photos/400/300?random=306",
-    hint: "lechon restaurant",
-    category: "restaurants",
+    image: 'https://picsum.photos/400/300?random=306',
+    hint: 'lechon restaurant',
+    category: 'restaurants',
     position: { lat: 10.3197, lng: 123.9052 },
     icon: Utensils,
-    iconBg: "bg-accent",
+    iconBg: 'bg-accent',
   },
 ];
 
-type MapPlace = (typeof mapPlaces)[0];
-
-// MapTiler configuration - Choose your preferred style
-const MAPTILER_STYLES = {
-  streets: "https://api.maptiler.com/maps/streets-v2/style.json",
-  basic: "https://api.maptiler.com/maps/basic-v2/style.json",
-  hybrid: "https://api.maptiler.com/maps/hybrid/style.json",
-  topo: "https://api.maptiler.com/maps/topo-v2/style.json",
-};
-
-// Get your MapTiler API key from: https://cloud.maptiler.com/
-// You can use it without a key for basic usage, but it's recommended to get one
-const MAPTILER_API_KEY = process.env.NEXT_PUBLIC_MAPTILER_API_KEY || "";
-
-// Build the style URL with or without API key
-const getMapStyle = (style: keyof typeof MAPTILER_STYLES = "streets") => {
-  const baseUrl = MAPTILER_STYLES[style];
-  return MAPTILER_API_KEY ? `${baseUrl}?key=${MAPTILER_API_KEY}` : baseUrl;
-};
+type MapPlace = typeof mapPlaces[0];
 
 export default function GeolocationPage() {
-  const [activeFilters, setActiveFilters] = useState<string[]>([
-    "beaches",
-    "restaurants",
-    "history",
-  ]);
+  const [activeFilters, setActiveFilters] = useState<string[]>(['beaches', 'restaurants', 'history']);
   const [zoomLevel, setZoomLevel] = useState(13);
-  const [userLocation, setUserLocation] = useState<{
-    lat: number;
-    lng: number;
-  } | null>(null);
+  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [isLocating, setIsLocating] = useState(false);
   const [selectedPlace, setSelectedPlace] = useState<MapPlace | null>(null);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [radius, setRadius] = useState([5]); // Default 5km radius
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState('');
   const [isSearchFocused, setIsSearchFocused] = useState(false);
-  const [mapStyle, setMapStyle] =
-    useState<keyof typeof MAPTILER_STYLES>("streets");
-
-  // Centered on Cebu City
-  const [viewport, setViewport] = useState({
+    const [viewport, setViewport] = useState({
     latitude: 10.3157, // Cebu City latitude
     longitude: 123.8854, // Cebu City longitude
     zoom: 12, // Zoom level to show Cebu island
@@ -221,44 +195,42 @@ export default function GeolocationPage() {
   // Get user's current location
   const handleLocateMe = () => {
     setIsLocating(true);
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const { latitude, longitude } = position.coords;
-          setUserLocation({
-            lat: latitude,
-            lng: longitude,
-          });
+    navigator.permissions.query({ name: 'geolocation' }).then((result) => {
+      if (result.state === 'granted' || result.state === 'prompt') {
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            const { latitude, longitude } = position.coords;
+            setUserLocation({
+              lat: latitude,
+              lng: longitude,
+            });
 
-          // Fly to user's location
-          setViewport((prev) => ({
-            ...prev,
-            latitude,
-            longitude,
-            zoom: 15,
-          }));
-          setIsLocating(false);
-        },
-        (error) => {
-          console.error("Error getting location:", error);
-          setIsLocating(false);
-
-          // If location fails, center back to Cebu
-          setViewport({
-            latitude: 10.3157,
-            longitude: 123.8854,
-            zoom: 13,
-          });
-        }
-      );
-    }
+            // Fly to user's location
+            setViewport((prev) => ({
+              ...prev,
+              latitude,
+              longitude,
+              zoom: 15,
+            }));
+            setIsLocating(false);
+          },
+          (error) => {
+            console.error('Error getting location:', error);
+            setIsLocating(false);
+          }
+        );
+      } else if (result.state === 'denied') {
+        setIsLocating(false);
+        alert('Please enable location services in your browser settings.');
+      }
+    });
   };
 
   // Toggle filter
   const toggleFilter = (filterId: string) => {
-    setActiveFilters((prev) =>
+    setActiveFilters(prev => 
       prev.includes(filterId)
-        ? prev.filter((f) => f !== filterId)
+        ? prev.filter(f => f !== filterId)
         : [...prev, filterId]
     );
   };
@@ -267,23 +239,14 @@ export default function GeolocationPage() {
   const handleMarkerClick = (place: MapPlace) => {
     setSelectedPlace(place);
     setIsSheetOpen(true);
-
-    // Center map on the selected place
-    setViewport((prev) => ({
-      ...prev,
-      latitude: place.position.lat,
-      longitude: place.position.lng,
-      zoom: 15,
-    }));
   };
 
   // Filter places based on active filters, radius, AND search query
   const filteredPlaces = useMemo(() => {
-    return mapPlaces.filter((place) => {
+    return mapPlaces.filter(place => {
       const matchesFilter = activeFilters.includes(place.category);
       const withinRadius = place.distance <= radius[0];
-      const matchesSearch =
-        searchQuery === "" ||
+      const matchesSearch = searchQuery === '' || 
         place.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         place.description.toLowerCase().includes(searchQuery.toLowerCase());
       return matchesFilter && withinRadius && matchesSearch;
@@ -293,56 +256,44 @@ export default function GeolocationPage() {
   // Search results for dropdown
   const searchResults = useMemo(() => {
     if (searchQuery.length < 2) return [];
-    return mapPlaces
-      .filter(
-        (place) =>
-          place.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          place.description.toLowerCase().includes(searchQuery.toLowerCase())
-      )
-      .slice(0, 5);
+    return mapPlaces.filter(place =>
+      place.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      place.description.toLowerCase().includes(searchQuery.toLowerCase())
+    ).slice(0, 5);
   }, [searchQuery]);
-
-  // Reset view to Cebu center
-  const resetToCebuView = () => {
-    setViewport({
-      latitude: 10.3157,
-      longitude: 123.8854,
-      zoom: 12,
-    });
-  };
 
   return (
     <div className="fixed inset-0 overflow-hidden bg-[#e8e4d8]">
-      {/* MapTiler Map */}
-      <Map
+       <Map
         ref={mapContainerRef}
         {...viewport}
         onMove={(evt) => setViewport(evt.viewState)}
         style={{ width: "100%", height: "100%" }}
-        mapStyle={getMapStyle(mapStyle)}
-        attributionControl={true}
-        customAttribution={[
-          '<a href="https://www.maptiler.com/copyright/" target="_blank">&copy; MapTiler</a>',
-          '<a href="https://www.openstreetmap.org/copyright" target="_blank">&copy; OpenStreetMap contributors</a>',
-        ]}
+        mapStyle="https://api.maptiler.com/maps/streets/style.json?key=YOUR_MAPTILER_API_KEY"
       >
-        {/* Map Controls */}
-        <NavigationControl position="top-right" />
-        <FullscreenControl position="top-right" />
+        <Source id="polylineLayer" type="geojson" data={cebuPolyline}>
+            <Layer
+              id="lineLayer"
+              type="line"
+              source="my-data"
+              layout={{
+                "line-join": "round",
+                "line-cap": "round"
+              }}
+              paint={{
+                "line-color": "rgba(3, 170, 238, 0.8)",
+                "line-width": 8
+              }} />
+        </Source>
 
-        {/* Geolocate Control */}
         <GeolocateControl
           position="top-right"
           positionOptions={{ enableHighAccuracy: true }}
           trackUserLocation={true}
           showUserLocation={true}
-          auto={false}
+          auto={true}
         />
-
-        {/* Custom Markers */}
-        {filteredPlaces.map((place) => {
-          const IconComponent = place.icon;
-          return (
+        {filteredPlaces.map((place) => (
             <Marker
               key={place.id}
               latitude={place.position.lat}
@@ -358,13 +309,21 @@ export default function GeolocationPage() {
                 )}
                 aria-label={place.title}
               >
-                <IconComponent className="h-5 w-5 text-white" />
+                <place.icon className="h-5 w-5 text-white" />
               </button>
             </Marker>
-          );
-        })}
+          ))}
 
-        {/* Popup for selected place */}
+        {userLocation && (
+            <Marker
+              latitude={userLocation.lat}
+              longitude={userLocation.lng}
+              anchor="bottom"
+            >
+                <div className="w-4 h-4 bg-blue-500 rounded-full border-2 border-white shadow-lg" />
+            </Marker>
+        )}
+
         {selectedPlace && (
           <Popup
             latitude={selectedPlace.position.lat}
@@ -373,7 +332,7 @@ export default function GeolocationPage() {
             closeOnClick={false}
             onClose={() => setSelectedPlace(null)}
             anchor="top"
-            className="custom-popup"
+            className="z-50"
           >
             <div className="p-2">
               <h3 className="font-bold text-sm">{selectedPlace.title}</h3>
@@ -401,26 +360,14 @@ export default function GeolocationPage() {
         </Button>
       </div>
 
-      {/* Cebu Reset Button */}
-      <div className="absolute top-4 left-20 z-40">
-        <Button
-          variant="secondary"
-          size="sm"
-          onClick={resetToCebuView}
-          className="rounded-full bg-card/95 backdrop-blur-md shadow-lg h-11 px-4 gap-2"
-        >
-          <span className="text-sm">📍 Cebu</span>
-        </Button>
-      </div>
-
       {/* Search Bar - Top */}
-      <div className="absolute top-4 left-36 right-4 z-40">
+      <div className="absolute top-4 left-20 right-4 z-40">
         <div className="relative max-w-md mx-auto">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               type="text"
-              placeholder="Search places in Cebu..."
+              placeholder="Search places..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               onFocus={() => setIsSearchFocused(true)}
@@ -429,7 +376,7 @@ export default function GeolocationPage() {
             />
             {searchQuery && (
               <button
-                onClick={() => setSearchQuery("")}
+                onClick={() => setSearchQuery('')}
                 className="absolute right-3 top-1/2 -translate-y-1/2 p-1 hover:bg-muted rounded-full"
                 aria-label="Clear search"
                 title="Clear search"
@@ -438,7 +385,7 @@ export default function GeolocationPage() {
               </button>
             )}
           </div>
-
+          
           {/* Search Results Dropdown */}
           {isSearchFocused && searchResults.length > 0 && (
             <div className="absolute top-full left-0 right-0 mt-2 bg-card/95 backdrop-blur-md border border-border rounded-2xl shadow-lg overflow-hidden">
@@ -447,25 +394,19 @@ export default function GeolocationPage() {
                   key={place.id}
                   onClick={() => {
                     handleMarkerClick(place);
-                    setSearchQuery("");
+                    setSearchQuery('');
                   }}
                   className="w-full flex items-center gap-3 p-3 hover:bg-muted transition-colors text-left"
                 >
-                  <div
-                    className={cn(
-                      "w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0",
-                      place.iconBg
-                    )}
-                  >
+                  <div className={cn(
+                    "w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0",
+                    place.iconBg
+                  )}>
                     <place.icon className="h-4 w-4 text-white" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="font-medium text-sm truncate">
-                      {place.title}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {place.distanceText}
-                    </p>
+                    <p className="font-medium text-sm truncate">{place.title}</p>
+                    <p className="text-xs text-muted-foreground">{place.distanceText}</p>
                   </div>
                 </button>
               ))}
@@ -479,15 +420,13 @@ export default function GeolocationPage() {
         {filterCategories.map((filter) => (
           <Button
             key={filter.id}
-            variant={
-              activeFilters.includes(filter.id) ? "default" : "secondary"
-            }
+            variant={activeFilters.includes(filter.id) ? "default" : "secondary"}
             size="sm"
             onClick={() => toggleFilter(filter.id)}
             className={cn(
               "rounded-full gap-2 transition-all duration-200 shadow-lg",
-              activeFilters.includes(filter.id)
-                ? `${filter.color} text-white hover:opacity-90`
+              activeFilters.includes(filter.id) 
+                ? `${filter.color} text-white hover:opacity-90` 
                 : "bg-card/95 backdrop-blur-md hover:bg-card"
             )}
           >
@@ -502,12 +441,7 @@ export default function GeolocationPage() {
         <Button
           variant="secondary"
           size="icon"
-          onClick={() =>
-            setViewport((prev) => ({
-              ...prev,
-              zoom: Math.min(prev.zoom + 1, 18),
-            }))
-          }
+          onClick={() => setZoomLevel(prev => Math.min(prev + 1, 18))}
           className="rounded-xl bg-card/95 backdrop-blur-md shadow-lg h-10 w-10"
         >
           <Plus className="h-5 w-5" />
@@ -515,12 +449,7 @@ export default function GeolocationPage() {
         <Button
           variant="secondary"
           size="icon"
-          onClick={() =>
-            setViewport((prev) => ({
-              ...prev,
-              zoom: Math.max(prev.zoom - 1, 1),
-            }))
-          }
+          onClick={() => setZoomLevel(prev => Math.max(prev - 1, 1))}
           className="rounded-xl bg-card/95 backdrop-blur-md shadow-lg h-10 w-10"
         >
           <Minus className="h-5 w-5" />
@@ -532,27 +461,8 @@ export default function GeolocationPage() {
           disabled={isLocating}
           className="rounded-xl bg-card/95 backdrop-blur-md shadow-lg h-10 w-10 mt-2"
         >
-          <LocateFixed
-            className={cn("h-5 w-5", isLocating && "animate-pulse")}
-          />
+          <LocateFixed className={cn("h-5 w-5", isLocating && "animate-pulse")} />
         </Button>
-      </div>
-
-      {/* Map Style Selector - Bottom Left */}
-      <div className="absolute bottom-32 left-4 z-40">
-        <div className="bg-card/95 backdrop-blur-md border border-border rounded-2xl shadow-lg p-2 flex gap-2">
-          {Object.entries(MAPTILER_STYLES).map(([key]) => (
-            <Button
-              key={key}
-              variant={mapStyle === key ? "default" : "secondary"}
-              size="sm"
-              onClick={() => setMapStyle(key as keyof typeof MAPTILER_STYLES)}
-              className="rounded-lg px-3 text-xs capitalize"
-            >
-              {key}
-            </Button>
-          ))}
-        </div>
       </div>
 
       {/* Radius Adjuster - Bottom */}
@@ -563,9 +473,7 @@ export default function GeolocationPage() {
             <div className="flex-1">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-sm font-medium">Search Radius</span>
-                <span className="text-sm font-semibold text-primary">
-                  {radius[0]} km
-                </span>
+                <span className="text-sm font-semibold text-primary">{radius[0]} km</span>
               </div>
               <Slider
                 value={radius}
@@ -585,18 +493,15 @@ export default function GeolocationPage() {
 
       {/* Place Details Sheet (Slide-up Modal) */}
       <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
-        <SheetContent
-          side="bottom"
-          className="rounded-t-3xl h-auto max-h-[70vh] pb-8 z-50"
-        >
+        <SheetContent side="bottom" className="rounded-t-3xl h-auto max-h-[70vh] pb-8 z-50">
           {selectedPlace && (
             <>
               <SheetHeader className="sr-only">
                 <SheetTitle>{selectedPlace.title}</SheetTitle>
               </SheetHeader>
-
+              
               <div className="w-12 h-1.5 bg-muted rounded-full mx-auto mb-4" />
-
+              
               {/* Place Image */}
               <div className="relative h-48 w-full rounded-2xl overflow-hidden mb-4">
                 <Image
@@ -608,28 +513,20 @@ export default function GeolocationPage() {
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
                 <div className="absolute bottom-4 left-4 right-4">
-                  <h2 className="text-xl font-bold text-white font-headline">
-                    {selectedPlace.title}
-                  </h2>
+                  <h2 className="text-xl font-bold text-white font-headline">{selectedPlace.title}</h2>
                   <div className="flex items-center gap-2 mt-1">
                     <div className="flex items-center gap-1">
                       <Star className="h-4 w-4 text-yellow-400 fill-yellow-400" />
-                      <span className="text-white text-sm">
-                        {selectedPlace.rating}
-                      </span>
+                      <span className="text-white text-sm">{selectedPlace.rating}</span>
                     </div>
                     <span className="text-white/70 text-sm">•</span>
-                    <span className="text-white/70 text-sm">
-                      {selectedPlace.distanceText}
-                    </span>
+                    <span className="text-white/70 text-sm">{selectedPlace.distanceText}</span>
                   </div>
                 </div>
               </div>
 
               {/* Place Description */}
-              <p className="text-muted-foreground mb-6">
-                {selectedPlace.description}
-              </p>
+              <p className="text-muted-foreground mb-6">{selectedPlace.description}</p>
 
               {/* Action Buttons */}
               <div className="flex gap-3">
