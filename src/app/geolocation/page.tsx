@@ -23,9 +23,12 @@ import {
   Navigation,
   CircleDot,
   Search,
-  X
+  X,
+  ArrowLeft
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import 'leaflet/dist/leaflet.css';
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 
 function slugify(text: string) {
   return text
@@ -57,7 +60,7 @@ const mapPlaces = [
     image: 'https://picsum.photos/400/300?random=300',
     hint: 'historic landmark',
     category: 'history',
-    position: { top: 35, left: 48 },
+    position: { lat: 10.2928, lng: 123.9021 },
     icon: Landmark,
     iconBg: 'bg-primary',
   },
@@ -71,7 +74,7 @@ const mapPlaces = [
     image: 'https://picsum.photos/400/300?random=301',
     hint: 'restaurant seafood',
     category: 'restaurants',
-    position: { top: 30, left: 62 },
+    position: { lat: 10.2839, lng: 123.9333 },
     icon: Utensils,
     iconBg: 'bg-accent',
   },
@@ -85,7 +88,7 @@ const mapPlaces = [
     image: 'https://picsum.photos/400/300?random=302',
     hint: 'beach resort',
     category: 'beaches',
-    position: { top: 25, left: 70 },
+    position: { lat: 10.2625, lng: 123.9919 },
     icon: Umbrella,
     iconBg: 'bg-cyan-500',
   },
@@ -99,7 +102,7 @@ const mapPlaces = [
     image: 'https://picsum.photos/400/300?random=303',
     hint: 'filipino food',
     category: 'restaurants',
-    position: { top: 52, left: 45 },
+    position: { lat: 10.3088, lng: 123.9076 },
     icon: Utensils,
     iconBg: 'bg-accent',
   },
@@ -113,7 +116,7 @@ const mapPlaces = [
     image: 'https://picsum.photos/400/300?random=304',
     hint: 'historic fort',
     category: 'history',
-    position: { top: 58, left: 52 },
+    position: { lat: 10.2925, lng: 123.9048 },
     icon: Landmark,
     iconBg: 'bg-primary',
   },
@@ -127,7 +130,7 @@ const mapPlaces = [
     image: 'https://picsum.photos/400/300?random=305',
     hint: 'luxury beach',
     category: 'beaches',
-    position: { top: 20, left: 75 },
+    position: { lat: 10.2789, lng: 124.0183 },
     icon: Umbrella,
     iconBg: 'bg-cyan-500',
   },
@@ -141,7 +144,7 @@ const mapPlaces = [
     image: 'https://picsum.photos/400/300?random=306',
     hint: 'lechon restaurant',
     category: 'restaurants',
-    position: { top: 40, left: 38 },
+    position: { lat: 10.3197, lng: 123.9052 },
     icon: Utensils,
     iconBg: 'bg-accent',
   },
@@ -151,7 +154,7 @@ type MapPlace = typeof mapPlaces[0];
 
 export default function GeolocationPage() {
   const [activeFilters, setActiveFilters] = useState<string[]>(['beaches', 'restaurants', 'history']);
-  const [zoomLevel, setZoomLevel] = useState(1);
+  const [zoomLevel, setZoomLevel] = useState(13);
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [isLocating, setIsLocating] = useState(false);
   const [selectedPlace, setSelectedPlace] = useState<MapPlace | null>(null);
@@ -221,127 +224,36 @@ export default function GeolocationPage() {
     ).slice(0, 5);
   }, [searchQuery]);
 
-  // Calculate circle radius in pixels based on slider value and zoom
-  const circleRadius = useMemo(() => {
-    // Base radius that scales with the slider (5km = ~120px at zoom 1)
-    return (radius[0] / 5) * 120 * zoomLevel;
-  }, [radius, zoomLevel]);
-
-  // Apply dynamic styles via refs to avoid inline styles
-  useEffect(() => {
-    if (mapContainerRef.current) {
-      mapContainerRef.current.style.transform = `scale(${zoomLevel})`;
-    }
-  }, [zoomLevel]);
-
-  useEffect(() => {
-    if (radiusCircleRef.current) {
-      const size = `${circleRadius * 2}px`;
-      radiusCircleRef.current.style.width = size;
-      radiusCircleRef.current.style.height = size;
-    }
-  }, [circleRadius]);
-
-  useEffect(() => {
-    filteredPlaces.forEach((place) => {
-      const marker = markerRefs.current.get(place.id);
-      if (marker) {
-        marker.style.top = `${place.position.top}%`;
-        marker.style.left = `${place.position.left}%`;
-      }
-    });
-  }, [filteredPlaces]);
-
-  // Zoom controls
-  const handleZoomIn = () => setZoomLevel(prev => Math.min(prev * 1.2, 3));
-  const handleZoomOut = () => setZoomLevel(prev => Math.max(prev / 1.2, 0.5));
-
   return (
     <div className="fixed inset-0 overflow-hidden bg-[#e8e4d8]">
-      {/* Map Container - Full screen, no scroll */}
-      <div 
-        ref={mapContainerRef}
-        className="absolute inset-0 overflow-hidden origin-center transition-transform duration-300 ease-out"
-      >
-        {/* Stylized map background */}
-        <svg viewBox="0 0 400 600" className="w-full h-full" preserveAspectRatio="xMidYMid slice">
-          {/* Water */}
-          <rect fill="#a8d5e5" width="400" height="600" />
-          
-          {/* Land mass (Cebu-like shape) */}
-          <path 
-            fill="#e8e4d8" 
-            d="M150,50 Q200,30 250,50 Q280,100 290,200 Q300,300 280,400 Q260,500 200,580 Q140,550 120,450 Q100,350 110,250 Q120,150 150,50 Z"
-          />
-          
-          {/* Roads */}
-          <path stroke="#ffffff" strokeWidth="3" fill="none" d="M180,100 L200,200 Q210,300 200,400 L190,500" />
-          <path stroke="#ffffff" strokeWidth="2" fill="none" d="M150,200 L250,220" />
-          <path stroke="#ffffff" strokeWidth="2" fill="none" d="M140,350 L260,340" />
-          <path stroke="#ffffff" strokeWidth="1.5" fill="none" d="M170,280 L230,290" />
-          <path stroke="#ffffff" strokeWidth="1.5" fill="none" d="M180,320 L220,310" />
-          
-          {/* City labels */}
-          <text x="200" y="300" fontSize="10" fill="#333" textAnchor="middle" fontWeight="bold">Cebu City</text>
-          <text x="280" y="250" fontSize="8" fill="#333" textAnchor="middle">Mandaue</text>
-          <text x="150" y="200" fontSize="7" fill="#666" textAnchor="middle">LAHUG</text>
-          <text x="250" y="280" fontSize="7" fill="#666" textAnchor="middle">MABOLO</text>
-          <text x="180" y="350" fontSize="7" fill="#666" textAnchor="middle">LABANGON</text>
-          <text x="130" y="400" fontSize="7" fill="#666" textAnchor="middle">MAMBALING</text>
-          <text x="100" y="450" fontSize="8" fill="#333" textAnchor="middle">NUSTAR</text>
-          <text x="240" y="180" fontSize="7" fill="#666" textAnchor="middle">BUSAY</text>
-          <text x="300" y="200" fontSize="7" fill="#666" textAnchor="middle">TALAMBAN</text>
-        </svg>
-      </div>
-
-      {/* Circular Radius Overlay - centered on map */}
-      <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
-        <div 
-          ref={radiusCircleRef}
-          className="rounded-full border-4 border-primary/50 bg-primary/10 transition-all duration-300"
+      <MapContainer center={[10.3157, 123.8854]} zoom={zoomLevel} style={{ height: "100%", width: "100%" }} className="z-0">
+        <TileLayer
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         />
-        {/* Center point */}
-        <div className="absolute w-4 h-4 bg-primary rounded-full border-2 border-white shadow-lg z-10">
-          <div className="absolute inset-0 bg-primary rounded-full animate-ping opacity-30" />
-        </div>
-      </div>
+        {filteredPlaces.map(place => (
+          <Marker key={place.id} position={[place.position.lat, place.position.lng]}>
+            <Popup>
+              {place.title}
+            </Popup>
+          </Marker>
+        ))}
+      </MapContainer>
 
-      {/* Clickable Map markers - only show if within radius */}
-      {filteredPlaces.map((place) => (
-        <button
-          key={place.id}
-          ref={(el) => {
-            if (el) {
-              markerRefs.current.set(place.id, el);
-              el.style.top = `${place.position.top}%`;
-              el.style.left = `${place.position.left}%`;
-            }
-          }}
-          onClick={() => handleMarkerClick(place)}
-          className="absolute transform -translate-x-1/2 -translate-y-1/2 transition-all duration-300 hover:scale-110 active:scale-95 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded-full z-20"
-          aria-label={`View ${place.title}`}
+      {/* Back Button */}
+      <div className="absolute top-4 left-4 z-40">
+        <Button
+          variant="secondary"
+          size="icon"
+          onClick={() => window.history.back()}
+          className="rounded-full bg-card/95 backdrop-blur-md shadow-lg h-11 w-11"
         >
-          <div className={cn(
-            "w-10 h-10 rounded-full flex items-center justify-center shadow-lg border-2 border-white",
-            place.iconBg
-          )}>
-            <place.icon className="h-5 w-5 text-white" />
-          </div>
-        </button>
-      ))}
-
-      {/* User location marker */}
-      {userLocation && (
-        <div className="absolute top-[50%] left-[50%] transform -translate-x-1/2 -translate-y-1/2 z-20">
-          <div className="relative">
-            <div className="w-5 h-5 bg-blue-500 rounded-full border-2 border-white shadow-lg" />
-            <div className="absolute inset-0 w-5 h-5 bg-blue-500 rounded-full animate-ping opacity-50" />
-          </div>
-        </div>
-      )}
+          <ArrowLeft className="h-5 w-5" />
+        </Button>
+      </div>
 
       {/* Search Bar - Top */}
-      <div className="absolute top-4 left-4 right-4 z-30">
+      <div className="absolute top-4 left-20 right-4 z-40">
         <div className="relative max-w-md mx-auto">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -396,7 +308,7 @@ export default function GeolocationPage() {
       </div>
 
       {/* Filter Chips - Below Search */}
-      <div className="absolute top-20 left-4 right-4 z-30 flex gap-2 justify-center flex-wrap">
+      <div className="absolute top-20 left-4 right-4 z-40 flex gap-2 justify-center flex-wrap">
         {filterCategories.map((filter) => (
           <Button
             key={filter.id}
@@ -417,11 +329,11 @@ export default function GeolocationPage() {
       </div>
 
       {/* Map Controls - Right side */}
-      <div className="absolute right-4 top-1/2 -translate-y-1/2 flex flex-col gap-2 z-30">
+      <div className="absolute right-4 top-1/2 -translate-y-1/2 flex flex-col gap-2 z-40">
         <Button
           variant="secondary"
           size="icon"
-          onClick={handleZoomIn}
+          onClick={() => setZoomLevel(prev => Math.min(prev + 1, 18))}
           className="rounded-xl bg-card/95 backdrop-blur-md shadow-lg h-10 w-10"
         >
           <Plus className="h-5 w-5" />
@@ -429,7 +341,7 @@ export default function GeolocationPage() {
         <Button
           variant="secondary"
           size="icon"
-          onClick={handleZoomOut}
+          onClick={() => setZoomLevel(prev => Math.max(prev - 1, 1))}
           className="rounded-xl bg-card/95 backdrop-blur-md shadow-lg h-10 w-10"
         >
           <Minus className="h-5 w-5" />
@@ -446,7 +358,7 @@ export default function GeolocationPage() {
       </div>
 
       {/* Radius Adjuster - Bottom */}
-      <div className="absolute bottom-24 md:bottom-8 left-4 right-4 z-30">
+      <div className="absolute bottom-24 md:bottom-8 left-4 right-4 z-40">
         <div className="bg-card/95 backdrop-blur-md border border-border rounded-2xl shadow-lg p-4 max-w-md mx-auto">
           <div className="flex items-center gap-3">
             <CircleDot className="h-5 w-5 text-primary flex-shrink-0" />
@@ -473,7 +385,7 @@ export default function GeolocationPage() {
 
       {/* Place Details Sheet (Slide-up Modal) */}
       <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
-        <SheetContent side="bottom" className="rounded-t-3xl h-auto max-h-[70vh] pb-8">
+        <SheetContent side="bottom" className="rounded-t-3xl h-auto max-h-[70vh] pb-8 z-50">
           {selectedPlace && (
             <>
               <SheetHeader className="sr-only">

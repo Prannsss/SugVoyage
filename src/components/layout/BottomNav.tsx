@@ -8,7 +8,7 @@ import { cn } from '@/lib/utils';
 import { useMemo, useEffect, useState } from 'react';
 
 const navItems = [
-  { href: '/', label: 'Explore', icon: Home },
+  { href: '/explore', label: 'Explore', icon: Home },
   { href: '/geolocation', label: 'Map', icon: MapPin },
   { href: '/scan', label: 'Scan', icon: Camera },
   { href: '/feed', label: 'Feed', icon: BookOpen },
