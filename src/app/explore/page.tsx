@@ -1,16 +1,23 @@
-'use client';
+"use client";
 
-import { useState, useMemo } from 'react';
-import Image from 'next/image';
-import Link from 'next/link';
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
-import { Input } from '@/components/ui/input';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Search, MapPin, Users, Star, ChevronRight, CalendarDays } from 'lucide-react';
-import { categories } from '@/lib/places';
-import { cn } from '@/lib/utils';
+import { useState, useMemo } from "react";
+import Image from "next/image";
+import Link from "next/link";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import { Input } from "@/components/ui/input";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  Search,
+  MapPin,
+  Users,
+  Star,
+  ChevronRight,
+  CalendarDays,
+} from "lucide-react";
+import { categories } from "@/lib/places";
+import { cn } from "@/lib/utils";
 
 type CategoryName = keyof typeof categories;
 
@@ -18,68 +25,68 @@ function slugify(text: string) {
   return text
     .toString()
     .toLowerCase()
-    .replace(/\s+/g, '-')
-    .replace(/[^\w-]+/g, '')
-    .replace(/--+/g, '-')
-    .replace(/^-+/, '')
-    .replace(/-+$/, '');
+    .replace(/\s+/g, "-")
+    .replace(/[^\w-]+/g, "")
+    .replace(/--+/g, "-")
+    .replace(/^-+/, "")
+    .replace(/-+$/, "");
 }
 
 // Featured destinations carousel data
 const featuredDestinations = [
   {
-    title: 'Island Hopping in Mactan',
-    description: 'Discover pristine beaches & vibrant marine life.',
-    image: 'https://picsum.photos/600/400?random=100',
-    hint: 'beach island',
+    title: "Island Hopping in Mactan",
+    description: "Discover pristine beaches & vibrant marine life.",
+    image: "https://picsum.photos/600/400?random=100",
+    hint: "beach island",
   },
   {
-    title: 'Kawasan Falls Adventure',
-    description: 'Experience the turquoise cascades of Cebu.',
-    image: 'https://picsum.photos/600/400?random=101',
-    hint: 'waterfall nature',
+    title: "Kawasan Falls Adventure",
+    description: "Experience the turquoise cascades of Cebu.",
+    image: "https://picsum.photos/600/400?random=101",
+    hint: "waterfall nature",
   },
   {
-    title: 'Historic Downtown Cebu',
-    description: 'Walk through centuries of Philippine history.',
-    image: 'https://picsum.photos/600/400?random=102',
-    hint: 'historic downtown',
+    title: "Historic Downtown Cebu",
+    description: "Walk through centuries of Philippine history.",
+    image: "https://picsum.photos/600/400?random=102",
+    hint: "historic downtown",
   },
 ];
 
 // Nearby points of interest
 const nearbyPlaces = [
   {
-    title: 'House of Lechon',
-    distance: '0.8 km away',
+    title: "House of Lechon",
+    distance: "0.8 km away",
     rating: 4.5,
-    image: 'https://picsum.photos/100/100?random=200',
-    hint: 'restaurant food',
+    image: "https://picsum.photos/100/100?random=200",
+    hint: "restaurant food",
   },
   {
-    title: 'Abaca Baking Company',
-    distance: '1.2 km away',
+    title: "Abaca Baking Company",
+    distance: "1.2 km away",
     rating: 4.9,
-    image: 'https://picsum.photos/100/100?random=201',
-    hint: 'cafe bakery',
+    image: "https://picsum.photos/100/100?random=201",
+    hint: "cafe bakery",
   },
   {
-    title: 'SM City Cebu',
-    distance: '2.1 km away',
+    title: "SM City Cebu",
+    distance: "2.1 km away",
     rating: 4.3,
-    image: 'https://picsum.photos/100/100?random=202',
-    hint: 'shopping mall',
+    image: "https://picsum.photos/100/100?random=202",
+    hint: "shopping mall",
   },
 ];
 
 export default function ExplorePage() {
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
   const [currentSlide, setCurrentSlide] = useState(0);
 
   // Get "Just For You" recommendations (mix of top items from categories)
   const justForYou = useMemo(() => {
     const allItems = Object.entries(categories).flatMap(([category, items]) =>
-      items.slice(0, 2).map(item => ({ ...item, category }))
+      items.slice(0, 2).map((item) => ({ ...item, category }))
     );
     return allItems.slice(0, 6);
   }, []);
@@ -88,9 +95,9 @@ export default function ExplorePage() {
   const filteredItems = useMemo(() => {
     if (!searchTerm) return null;
     const allItems = Object.entries(categories).flatMap(([category, items]) =>
-      items.map(item => ({ ...item, category }))
+      items.map((item) => ({ ...item, category }))
     );
-    return allItems.filter(item =>
+    return allItems.filter((item) =>
       item.title.toLowerCase().includes(searchTerm.toLowerCase())
     );
   }, [searchTerm]);
@@ -100,11 +107,18 @@ export default function ExplorePage() {
       {/* Header with greeting */}
       <header className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight font-headline sm:text-3xl">Hello, Explorer</h1>
+          <h1 className="text-2xl font-bold tracking-tight font-headline sm:text-3xl">
+            Hello, Explorer
+          </h1>
         </div>
         <Avatar className="h-10 w-10 border-2 border-primary">
-          <AvatarImage src="https://picsum.photos/100/100?random=avatar" alt="User" />
-          <AvatarFallback className="bg-primary text-primary-foreground">JD</AvatarFallback>
+          <AvatarImage
+            src="https://picsum.photos/100/100?random=avatar"
+            alt="User"
+          />
+          <AvatarFallback className="bg-primary text-primary-foreground">
+            JD
+          </AvatarFallback>
         </Avatar>
       </header>
 
@@ -125,10 +139,16 @@ export default function ExplorePage() {
       {/* Search Results */}
       {filteredItems && filteredItems.length > 0 && (
         <div className="space-y-4">
-          <h2 className="text-lg font-semibold font-headline">Search Results</h2>
+          <h2 className="text-lg font-semibold font-headline">
+            Search Results
+          </h2>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {filteredItems.map((item) => (
-              <Link key={item.title} href={`/explore/${slugify(item.title)}`} className="group">
+              <Link
+                key={item.title}
+                href={`/explore/${slugify(item.title)}`}
+                className="group"
+              >
                 <Card className="overflow-hidden rounded-2xl shadow-sm hover:shadow-md transition-all duration-300">
                   <div className="relative aspect-[4/3]">
                     <Image
@@ -139,13 +159,18 @@ export default function ExplorePage() {
                       data-ai-hint={item.hint}
                     />
                     <div className="absolute top-3 left-3">
-                      <Badge variant="secondary" className="bg-accent text-accent-foreground text-xs font-medium uppercase tracking-wider">
+                      <Badge
+                        variant="secondary"
+                        className="bg-accent text-accent-foreground text-xs font-medium uppercase tracking-wider"
+                      >
                         {item.category}
                       </Badge>
                     </div>
                   </div>
                   <CardContent className="p-4">
-                    <h3 className="font-semibold font-headline">{item.title}</h3>
+                    <h3 className="font-semibold font-headline">
+                      {item.title}
+                    </h3>
                   </CardContent>
                 </Card>
               </Link>
@@ -198,31 +223,51 @@ export default function ExplorePage() {
 
           {/* Quick Actions */}
           <div className="flex justify-center gap-6 md:gap-8">
-            <Link href="/geolocation" className="flex flex-col items-center gap-2 group">
+            <Link
+              href="/geolocation"
+              className="flex flex-col items-center gap-2 group"
+            >
               <div className="w-14 h-14 md:w-16 md:h-16 rounded-2xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
                 <MapPin className="h-6 w-6 md:h-7 md:w-7 text-primary" />
               </div>
-              <span className="text-xs md:text-sm font-medium text-muted-foreground group-hover:text-foreground transition-colors">Map</span>
+              <span className="text-xs md:text-sm font-medium text-muted-foreground group-hover:text-foreground transition-colors">
+                Map
+              </span>
             </Link>
-            <Link href="/itinerary" className="flex flex-col items-center gap-2 group">
+            <Link
+              href="/itinerary"
+              className="flex flex-col items-center gap-2 group"
+            >
               <div className="w-14 h-14 md:w-16 md:h-16 rounded-2xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
                 <CalendarDays className="h-6 w-6 md:h-7 md:w-7 text-primary" />
               </div>
-              <span className="text-xs md:text-sm font-medium text-muted-foreground group-hover:text-foreground transition-colors">Itinerary</span>
+              <span className="text-xs md:text-sm font-medium text-muted-foreground group-hover:text-foreground transition-colors">
+                Itinerary
+              </span>
             </Link>
-            <Link href="/feed" className="flex flex-col items-center gap-2 group">
+            <Link
+              href="/feed"
+              className="flex flex-col items-center gap-2 group"
+            >
               <div className="w-14 h-14 md:w-16 md:h-16 rounded-2xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
                 <Users className="h-6 w-6 md:h-7 md:w-7 text-primary" />
               </div>
-              <span className="text-xs md:text-sm font-medium text-muted-foreground group-hover:text-foreground transition-colors">Community</span>
+              <span className="text-xs md:text-sm font-medium text-muted-foreground group-hover:text-foreground transition-colors">
+                Community
+              </span>
             </Link>
           </div>
 
           {/* Just For You Section */}
           <section className="space-y-4">
             <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold font-headline">Just For You</h2>
-              <Link href="#" className="text-sm text-primary hover:underline flex items-center gap-1">
+              <h2 className="text-lg font-semibold font-headline">
+                Just For You
+              </h2>
+              <Link
+                href="#"
+                className="text-sm text-primary hover:underline flex items-center gap-1"
+              >
                 See all <ChevronRight className="h-4 w-4" />
               </Link>
             </div>
@@ -244,13 +289,21 @@ export default function ExplorePage() {
                           data-ai-hint={item.hint}
                         />
                         <div className="absolute top-2 left-2">
-                          <Badge variant="secondary" className="bg-accent/90 text-accent-foreground text-[10px] font-medium uppercase tracking-wider">
-                            {item.category.replace("People's Choice", "Popular")}
+                          <Badge
+                            variant="secondary"
+                            className="bg-accent/90 text-accent-foreground text-[10px] font-medium uppercase tracking-wider"
+                          >
+                            {item.category.replace(
+                              "People's Choice",
+                              "Popular"
+                            )}
                           </Badge>
                         </div>
                       </div>
                       <CardContent className="p-3">
-                        <h3 className="font-semibold text-sm font-headline line-clamp-1">{item.title}</h3>
+                        <h3 className="font-semibold text-sm font-headline line-clamp-1">
+                          {item.title}
+                        </h3>
                       </CardContent>
                     </Card>
                   </Link>
@@ -262,7 +315,9 @@ export default function ExplorePage() {
 
           {/* Nearby Points of Interest */}
           <section className="space-y-4">
-            <h2 className="text-lg font-semibold font-headline">Nearby Points of Interest</h2>
+            <h2 className="text-lg font-semibold font-headline">
+              Nearby Points of Interest
+            </h2>
             <div className="space-y-3">
               {nearbyPlaces.map((place) => (
                 <Link
@@ -280,11 +335,17 @@ export default function ExplorePage() {
                     />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold font-headline text-sm md:text-base">{place.title}</h3>
-                    <p className="text-xs md:text-sm text-muted-foreground">{place.distance}</p>
+                    <h3 className="font-semibold font-headline text-sm md:text-base">
+                      {place.title}
+                    </h3>
+                    <p className="text-xs md:text-sm text-muted-foreground">
+                      {place.distance}
+                    </p>
                     <div className="flex items-center gap-1 mt-1">
                       <Star className="h-3 w-3 md:h-4 md:w-4 text-accent fill-accent" />
-                      <span className="text-xs md:text-sm font-medium">{place.rating}</span>
+                      <span className="text-xs md:text-sm font-medium">
+                        {place.rating}
+                      </span>
                     </div>
                   </div>
                   <ChevronRight className="h-5 w-5 text-muted-foreground group-hover:text-foreground transition-colors" />
