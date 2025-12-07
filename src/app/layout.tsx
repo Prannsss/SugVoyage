@@ -7,6 +7,7 @@ import ConditionalMain from '@/components/layout/ConditionalMain';
 import ConditionalDesktopNav from '@/components/layout/ConditionalDesktopNav';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { PinGuardProvider } from '@/components/auth/PinGuardProvider';
+import { AuthProvider } from '@/contexts/AuthContext';
 
 export const metadata: Metadata = {
   title: 'SugVoyage',
@@ -40,16 +41,18 @@ export default function RootLayout({
       </head>
       <body className="font-body antialiased" suppressHydrationWarning>
         <SidebarProvider>
-          <PinGuardProvider>
-            <div className="relative flex min-h-screen w-full flex-col">
-              <ConditionalDesktopNav />
-              <ConditionalMain>
-                <ConditionalHeader />
-                {children}
-              </ConditionalMain>
-              <ConditionalBottomNav />
-            </div>
-          </PinGuardProvider>
+          <AuthProvider>
+            <PinGuardProvider>
+              <div className="relative flex min-h-screen w-full flex-col">
+                <ConditionalDesktopNav />
+                <ConditionalMain>
+                  <ConditionalHeader />
+                  {children}
+                </ConditionalMain>
+                <ConditionalBottomNav />
+              </div>
+            </PinGuardProvider>
+          </AuthProvider>
         </SidebarProvider>
         <Toaster />
       </body>
