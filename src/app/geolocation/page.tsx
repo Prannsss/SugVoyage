@@ -16,6 +16,7 @@ import "maplibre-gl/dist/maplibre-gl.css";
 import { MapComponent } from "./components/MapComponent";
 import { MapControls } from "./components/MapControls";
 import { PlaceDetailsSheet } from "./components/PlaceDetailsSheet";
+import { useNotification } from "@/contexts/NotificationContext";
 
 function slugify(text: string) {
   return text
@@ -26,6 +27,18 @@ function slugify(text: string) {
     .replace(/--+/g, "-")
     .replace(/^-+/, "")
     .replace(/-+$/, "");
+}
+
+// Calculate distance between two points using Haversine formula
+function calculateDistance(lat1: number, lng1: number, lat2: number, lng2: number): number {
+  const R = 6371; // Radius of the Earth in km
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLng = (lng2 - lng1) * Math.PI / 180;
+  const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+    Math.sin(dLng / 2) * Math.sin(dLng / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
 }
 
 // Map markers/places data with distance from center (Cebu City)
@@ -62,6 +75,7 @@ interface MapPlace {
   position: { lat: number; lng: number };
   icon: any;
   iconBg: string;
+  isInRadius: boolean;
   featured?: boolean;
   price?: string;
   location?: string;
@@ -97,6 +111,8 @@ export default function GeolocationPage() {
   const [spots, setSpots] = useState<MapPlace[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [notifiedPlaceIds, setNotifiedPlaceIds] = useState<Set<string | number>>(new Set());
+  const { showPlacesNotification } = useNotification();
   const MAPTILER_API_KEY = process.env.NEXT_PUBLIC_MAPTILER_API_KEY || "";
   const [viewport, setViewport] = useState({
     latitude: 10.3157, // Cebu City latitude
@@ -146,6 +162,7 @@ export default function GeolocationPage() {
                 position: { lat: spot.latitude, lng: spot.longitude },
                 icon,
                 iconBg,
+                isInRadius: false,
               };
             }
           );
@@ -163,6 +180,47 @@ export default function GeolocationPage() {
 
     fetchSpots();
   }, []);
+
+  // Calculate distances and set isInRadius when userLocation or radius changes
+  useEffect(() => {
+    if (userLocation && spots.length > 0) {
+      const updatedSpots = spots.map((spot) => {
+        const distance = calculateDistance(
+          userLocation.lat,
+          userLocation.lng,
+          spot.position.lat,
+          spot.position.lng
+        );
+        const isInRadius = distance <= radius[0];
+        const distanceText = `${distance.toFixed(1)} km away`;
+        return {
+          ...spot,
+          distance,
+          distanceText,
+          isInRadius,
+        };
+      });
+      setSpots(updatedSpots);
+    }
+  }, [userLocation, radius, spots.length]);
+
+  // Detect new places in radius and show global notification
+  useEffect(() => {
+    if (spots.length > 0 && userLocation) {
+      const newPlacesInRadius = spots.filter(
+        (spot) => spot.isInRadius && !notifiedPlaceIds.has(spot.id)
+      );
+
+      if (newPlacesInRadius.length > 0) {
+        showPlacesNotification(newPlacesInRadius);
+
+        // Update notified places
+        const newNotifiedIds = new Set(notifiedPlaceIds);
+        newPlacesInRadius.forEach((place) => newNotifiedIds.add(place.id));
+        setNotifiedPlaceIds(newNotifiedIds);
+      }
+    }
+  }, [spots, userLocation, notifiedPlaceIds, showPlacesNotification]);
 
   // Ask for location permission on component mount
   useEffect(() => {
@@ -277,11 +335,12 @@ export default function GeolocationPage() {
       <MapComponent
         viewport={viewport}
         onViewportChange={setViewport}
-        filteredPlaces={filteredPlaces}
+        allPlaces={spots}
         selectedPlace={selectedPlace}
         onMarkerClick={handleMarkerClick}
         onPopupClose={() => setSelectedPlace(null)}
         userLocation={userLocation}
+        radius={radius[0]}
         MAPTILER_API_KEY={MAPTILER_API_KEY}
       />
 

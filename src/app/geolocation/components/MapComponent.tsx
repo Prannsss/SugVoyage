@@ -1,26 +1,28 @@
-import Map, { Marker, Popup, GeolocateControl } from "react-map-gl/maplibre";
+import Map, { Marker, Popup, GeolocateControl, Source, Layer } from "react-map-gl/maplibre";
 import { Navigation as NavigationIcon, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface MapComponentProps {
   viewport: any;
   onViewportChange: (viewport: any) => void;
-  filteredPlaces: any[];
+  allPlaces: any[];
   selectedPlace: any;
   onMarkerClick: (place: any) => void;
   onPopupClose: () => void;
   userLocation: { lat: number; lng: number; heading?: number } | null;
+  radius: number;
   MAPTILER_API_KEY: string;
 }
 
 export function MapComponent({
   viewport,
   onViewportChange,
-  filteredPlaces,
+  allPlaces,
   selectedPlace,
   onMarkerClick,
   onPopupClose,
   userLocation,
+  radius,
   MAPTILER_API_KEY,
 }: MapComponentProps) {
   return (
@@ -37,7 +39,7 @@ export function MapComponent({
         showUserLocation={true}
       />
 
-      {filteredPlaces.map((place) => (
+      {allPlaces.map((place) => (
         <Marker
           key={place.id}
           latitude={place.position.lat}
@@ -48,7 +50,7 @@ export function MapComponent({
             onClick={() => onMarkerClick(place)}
             className={cn(
               "w-10 h-10 rounded-full flex items-center justify-center transition-all duration-200 hover:scale-110",
-              place.iconBg,
+              place.isInRadius ? "bg-green-500" : place.iconBg,
               "shadow-lg border-2 border-white"
             )}
             aria-label={place.title}
@@ -57,6 +59,38 @@ export function MapComponent({
           </button>
         </Marker>
       ))}
+
+      {/* Radius circle around user location */}
+      {userLocation && (
+        <Source
+          id="radius-circle"
+          type="geojson"
+          data={{
+            type: "FeatureCollection",
+            features: [
+              {
+                type: "Feature",
+                geometry: {
+                  type: "Point",
+                  coordinates: [userLocation.lng, userLocation.lat],
+                },
+                properties: {},
+              },
+            ],
+          }}
+        >
+          <Layer
+            id="radius-circle-layer"
+            type="circle"
+            paint={{
+              "circle-radius": radius * 100, // Approximate pixels per km
+              "circle-color": "rgba(59, 130, 246, 0.2)", // Blue with opacity
+              "circle-stroke-color": "rgba(59, 130, 246, 0.5)",
+              "circle-stroke-width": 2,
+            }}
+          />
+        </Source>
+      )}
 
       {/* User's current location marker with arrow */}
       {userLocation && (
