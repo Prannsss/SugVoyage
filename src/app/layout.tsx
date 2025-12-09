@@ -1,3 +1,5 @@
+"use client"; // Add this at the top since we're using state
+
 import type { Metadata } from "next";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
@@ -10,29 +12,23 @@ import { PinGuardProvider } from "@/components/auth/PinGuardProvider";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { GlobalPlacesNotification } from "@/components/GlobalPlacesNotification";
 import { NotificationProvider } from "@/contexts/NotificationContext";
+import { useState, useEffect } from "react";
+import SplashScreen from "@/components/SplashScreen";
 
-export const metadata: Metadata = {
-  title: "SugVoyage",
-  description: "Your AI-powered travel companion for Cebu.",
-  keywords: ["travel", "Cebu", "AI", "tourism", "Philippines"],
-  authors: [{ name: "SugVoyage Team" }],
-  robots: {
-    index: true,
-    follow: true,
-  },
-};
-
-export const viewport = {
-  width: "device-width",
-  initialScale: 1,
-  maximumScale: 1,
-};
+// Note: Since we're using "use client", we can't export metadata from this file.
+// You'll need to move metadata to a separate layout or use next/headers
 
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const [isLoading, setIsLoading] = useState(true);
+
+  const handleLoadingComplete = () => {
+    setIsLoading(false);
+  };
+
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
@@ -46,23 +42,29 @@ export default function RootLayout({
         <link rel="manifest" href="/manifest.json" />
       </head>
       <body className="font-body antialiased" suppressHydrationWarning>
-        <SidebarProvider>
-          <AuthProvider>
-            <NotificationProvider>
-              <PinGuardProvider>
-                <div className="relative flex min-h-screen w-full flex-col">
-                  <ConditionalDesktopNav />
-                  <ConditionalMain>
-                    <ConditionalHeader />
-                    {children}
-                  </ConditionalMain>
-                  <ConditionalBottomNav />
-                </div>
-                <GlobalPlacesNotification />
-              </PinGuardProvider>
-            </NotificationProvider>
-          </AuthProvider>
-        </SidebarProvider>
+        <SplashScreen onLoadingComplete={handleLoadingComplete} />
+
+        {/* Only render main app after splash screen */}
+        {!isLoading && (
+          <SidebarProvider>
+            <AuthProvider>
+              <NotificationProvider>
+                <PinGuardProvider>
+                  <div className="relative flex min-h-screen w-full flex-col">
+                    <ConditionalDesktopNav />
+                    <ConditionalMain>
+                      <ConditionalHeader />
+                      {children}
+                    </ConditionalMain>
+                    <ConditionalBottomNav />
+                  </div>
+                  <GlobalPlacesNotification />
+                </PinGuardProvider>
+              </NotificationProvider>
+            </AuthProvider>
+          </SidebarProvider>
+        )}
+
         <Toaster />
       </body>
     </html>

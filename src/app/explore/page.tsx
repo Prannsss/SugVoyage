@@ -15,6 +15,9 @@ import {
   Star,
   ChevronRight,
   CalendarDays,
+  Cloud,
+  Car,
+  Clock,
 } from "lucide-react";
 import { categories } from "@/lib/places";
 import { cn } from "@/lib/utils";
@@ -54,6 +57,19 @@ const featuredDestinations = [
   },
 ];
 
+// Current weather data (static)
+const currentWeather = {
+  temperature: 29,
+  condition: "Partly Cloudy",
+  icon: "⛅",
+};
+
+// Current traffic data (static)
+const currentTraffic = {
+  status: "Moderate",
+  travelTime: "25-35 min",
+};
+
 // Nearby points of interest
 const nearbyPlaces = [
   {
@@ -83,7 +99,7 @@ export default function ExplorePage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [currentSlide, setCurrentSlide] = useState(0);
 
-  // Get "Just For You" recommendations (mix of top items from categories)
+  // Get "Just For You" recommendations
   const justForYou = useMemo(() => {
     const allItems = Object.entries(categories).flatMap(([category, items]) =>
       items.slice(0, 2).map((item) => ({ ...item, category }))
@@ -179,9 +195,10 @@ export default function ExplorePage() {
         </div>
       )}
 
-      {/* Featured Destination Carousel */}
+      {/* Main Content (when no search) */}
       {!filteredItems && (
         <>
+          {/* Featured Destination Carousel */}
           <div className="relative">
             <Card className="overflow-hidden rounded-3xl shadow-lg">
               <div className="relative aspect-[4/3] md:aspect-[16/9]">
@@ -256,6 +273,92 @@ export default function ExplorePage() {
                 Community
               </span>
             </Link>
+          </div>
+
+          {/* Weather & Traffic - Simple Version */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
+            {/* Weather Card */}
+            <Card className="rounded-2xl shadow-sm hover:shadow-md transition-shadow duration-200">
+              <CardContent className="p-3 sm:p-4">
+                <div className="flex items-center gap-3 sm:gap-4">
+                  <div className="rounded-xl bg-blue-50 p-2 sm:p-3 flex-shrink-0">
+                    <div className="relative">
+                      <Cloud className="h-6 w-6 sm:h-7 sm:w-7 text-blue-600" />
+                      <span className="absolute -top-1 -right-1 text-lg">
+                        {currentWeather.icon}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs sm:text-sm text-muted-foreground mb-1">
+                      Current Weather
+                    </p>
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-xl sm:text-2xl font-bold text-gray-900">
+                        {currentWeather.temperature}°C
+                      </span>
+                      <span className="text-sm text-blue-600 hidden sm:inline">
+                        {currentWeather.condition}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between mt-1">
+                      <p className="text-xs text-muted-foreground sm:hidden">
+                        {currentWeather.condition}
+                      </p>
+                      <div className="text-xs text-blue-500 font-medium px-2 py-1 bg-blue-50 rounded-full hidden sm:inline-block">
+                        Pleasant
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Traffic Card */}
+            <Card className="rounded-2xl shadow-sm hover:shadow-md transition-shadow duration-200">
+              <CardContent className="p-3 sm:p-4">
+                <div className="flex items-center gap-3 sm:gap-4">
+                  <div className="rounded-xl bg-amber-50 p-2 sm:p-3 flex-shrink-0">
+                    <Car className="h-6 w-6 sm:h-7 sm:w-7 text-amber-600" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs sm:text-sm text-muted-foreground mb-1">
+                      Traffic Status
+                    </p>
+                    <div className="flex items-center gap-2 sm:gap-3 mb-1">
+                      <span className="text-xl sm:text-2xl font-bold text-gray-900">
+                        {currentTraffic.status}
+                      </span>
+                      {/* Traffic Level Indicator */}
+                      <div className="flex items-center gap-1">
+                        {[1, 2, 3, 4, 5].map((level) => (
+                          <div
+                            key={level}
+                            className={cn(
+                              "w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full",
+                              level <= 3
+                                ? "bg-emerald-400"
+                                : level === 4
+                                ? "bg-amber-400"
+                                : "bg-red-400"
+                            )}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                        <Clock className="h-3.5 w-3.5" />
+                        <span>{currentTraffic.travelTime}</span>
+                      </div>
+                      <div className="text-xs text-amber-600 font-medium px-2 py-1 bg-amber-50 rounded-full hidden sm:inline-block">
+                        Live
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </div>
 
           {/* Just For You Section */}
