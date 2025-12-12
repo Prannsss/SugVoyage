@@ -831,6 +831,17 @@ export default function SettingsPage() {
           <SettingsItem icon={Download} title="Downloaded offline content">
             <ChevronRight className="h-5 w-5 text-muted-foreground" />
           </SettingsItem>
+          <SettingsItem icon={User} title="Travel Preferences">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => router.push("/settings/preferences")}
+              className="gap-1"
+            >
+              <span className="text-sm">Edit</span>
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </SettingsItem>
           <div className="py-2">
             <h3 className="font-bold mb-2 text-lg">Notifications</h3>
             <div className="space-y-1 divide-y">

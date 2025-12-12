@@ -13,6 +13,7 @@ const hiddenRoutes = [
   "/geolocation",
   "/feed",
   "/preferences-results",
+  "/settings",
 ];
 
 export default function ConditionalHeader() {

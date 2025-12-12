@@ -4,7 +4,7 @@ import { usePathname } from 'next/navigation';
 import BottomNav from './BottomNav';
 
 // Pages that should not show the bottom navigation
-const hiddenRoutes = ['/messages', '/onboarding', '/login', '/signup', '/verify-email'];
+const hiddenRoutes = ['/messages', '/onboarding', '/login', '/signup', '/verify-email', "/settings"];
 
 export default function ConditionalBottomNav() {
   const pathname = usePathname();
