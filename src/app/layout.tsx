@@ -64,7 +64,6 @@ export default function RootLayout({
             </AuthProvider>
           </SidebarProvider>
         )}
-
         <Toaster />
       </body>
     </html>

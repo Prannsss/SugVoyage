@@ -51,8 +51,9 @@ export default function LoginPage() {
       // Store user data in AuthContext
       login(response.user);
 
-      // Redirect to explore page
-      router.push("/explore");
+      // Simply redirect to feed after successful login
+      // The preferences flow will be handled by UserPreferencesContext
+      router.push("/feed");
     } catch (error: any) {
       setError(error.message || "Login failed. Please try again.");
       console.error("Login error:", error);
