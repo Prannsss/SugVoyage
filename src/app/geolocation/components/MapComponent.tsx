@@ -1,5 +1,11 @@
-import Map, { Marker, Popup, GeolocateControl, Source, Layer } from "react-map-gl/maplibre";
-import { Navigation as NavigationIcon, Star } from "lucide-react";
+import Map, {
+  Marker,
+  Popup,
+  GeolocateControl,
+  Source,
+  Layer,
+} from "react-map-gl/maplibre";
+import { Navigation as NavigationIcon, Star, MapPin } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface MapComponentProps {
@@ -50,12 +56,12 @@ export function MapComponent({
             onClick={() => onMarkerClick(place)}
             className={cn(
               "w-10 h-10 rounded-full flex items-center justify-center transition-all duration-200 hover:scale-110",
-              place.isInRadius ? "bg-green-500" : place.iconBg,
+              place.isInRadius ? "bg-green-500" : "bg-red-500", // Changed to consistent red for location markers
               "shadow-lg border-2 border-white"
             )}
             aria-label={place.title}
           >
-            <place.icon className="h-5 w-5 text-white" />
+            <MapPin className="h-5 w-5 text-white" />
           </button>
         </Marker>
       ))}

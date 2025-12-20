@@ -69,10 +69,10 @@ export default function SignupPage() {
   };
 
   return (
-    <div className="relative min-h-screen w-full flex items-center justify-center p-4">
+    <div className="relative min-h-screen w-full flex items-center justify-center md:p-4">
       <BackgroundCarousel />
 
-      <Card className="w-full max-w-md bg-white/10 border-white/20 backdrop-blur-xl text-white shadow-2xl rounded-3xl">
+      <div className="w-full max-w-md bg-white/10 border-white/20 backdrop-blur-xl text-white shadow-2xl md:rounded-3xl">
         <CardHeader className="space-y-3 text-center pb-2">
           <div className="flex justify-center mb-2">
             <Logo />
@@ -247,7 +247,7 @@ export default function SignupPage() {
             </Link>
           </p>
         </CardContent>
-      </Card>
+      </div>
     </div>
   );
 }
