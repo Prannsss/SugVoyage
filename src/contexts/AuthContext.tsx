@@ -15,6 +15,8 @@ interface User {
   username: string;
   email: string;
   avatar: string;
+  bio?: string;
+  description?: string;
 }
 
 interface AuthContextType {

@@ -239,7 +239,7 @@ export default function ProfilePage() {
   const userPosts = findPostsByUsername(username);
 
   // Check if this is the current user's profile
-  const isCurrentUser = currentUser && currentUser.username === username;
+  const isCurrentUser = Boolean(currentUser && currentUser.username === username);
 
   // Create a consistent display user object
   // Priority: currentUser data > mock data
@@ -255,7 +255,7 @@ export default function ProfilePage() {
     following: mockUser?.following || 0,
   };
 
-  if (!mockUser) {
+  if (!mockUser && !isCurrentUser) {
     return (
       <div className="flex flex-col items-center justify-center h-full text-center p-8 pt-20 md:pt-8 pb-24 md:pb-8">
         <h1 className="text-2xl font-bold">User not found</h1>

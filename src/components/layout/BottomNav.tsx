@@ -12,24 +12,30 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useMemo, useEffect, useState } from "react";
-
-const navItems = [
-  { href: "/explore", label: "Explore", icon: Home },
-  { href: "/geolocation", label: "Map", icon: MapPin },
-  { href: "/itinerary", label: "Itinerary", icon: CalendarDays },
-  { href: "/scan", label: "Scan", icon: Camera },
-  { href: "/feed", label: "Feed", icon: BookOpen },
-  { href: "/profile/alex_doe", label: "Profile", icon: User },
-] as const;
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function BottomNav() {
   const pathname = usePathname();
+  const { user } = useAuth();
   const [isClient, setIsClient] = useState(false);
 
   // Ensure component only renders active states on client
   useEffect(() => {
     setIsClient(true);
   }, []);
+
+  const navItems = [
+    { href: "/explore", label: "Explore", icon: Home },
+    { href: "/geolocation", label: "Map", icon: MapPin },
+    { href: "/itinerary", label: "Itinerary", icon: CalendarDays },
+    { href: "/scan", label: "Scan", icon: Camera },
+    { href: "/feed", label: "Feed", icon: BookOpen },
+    {
+      href: `/profile/${user?.username || "alex_doe"}`,
+      label: "Profile",
+      icon: User,
+    },
+  ] as const;
 
   // Memoize active states to prevent recalculation on every render
   const navItemsWithActive = useMemo(
@@ -41,7 +47,7 @@ export default function BottomNav() {
           ((item.href === "/" && pathname === "/") ||
             (item.href !== "/" && pathname.startsWith(item.href))),
       })),
-    [pathname, isClient]
+    [pathname, isClient, navItems]
   );
 
   return (

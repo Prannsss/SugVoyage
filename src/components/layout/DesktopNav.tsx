@@ -21,14 +21,7 @@ import {
 } from "@/components/ui/sidebar";
 import { Separator } from "../ui/separator";
 import { Logo } from "../Logo";
-
-const navItems = [
-  { href: "/explore", label: "Explore", icon: Home },
-  { href: "/geolocation", label: "Map", icon: MapPin },
-  { href: "/itinerary", label: "Itinerary", icon: CalendarDays },
-  { href: "/feed", label: "Feed", icon: BookOpen },
-  { href: "/profile/alex_doe", label: "Profile", icon: User },
-];
+import { useAuth } from "@/contexts/AuthContext";
 
 const bottomNavItems = [
   { href: "/settings", label: "Settings", icon: Settings },
@@ -36,6 +29,15 @@ const bottomNavItems = [
 
 export default function DesktopNav() {
   const pathname = usePathname();
+  const { user } = useAuth();
+
+  const navItems = [
+    { href: "/explore", label: "Explore", icon: Home },
+    { href: "/geolocation", label: "Map", icon: MapPin },
+    { href: "/itinerary", label: "Itinerary", icon: CalendarDays },
+    { href: "/feed", label: "Feed", icon: BookOpen },
+    { href: `/profile/${user?.username || "alex_doe"}`, label: "Profile", icon: User },
+  ];
 
   return (
     <div className="hidden md:block md:w-64 fixed top-0 left-0 h-full">

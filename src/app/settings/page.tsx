@@ -39,6 +39,7 @@ import {
   Check,
   Key,
   Delete,
+  ArrowLeft,
 } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
@@ -445,7 +446,15 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto px-4 md:px-6 pt-20 md:pt-8 pb-24 md:pb-8">
+    <div className="max-w-4xl mx-auto px-4 md:px-6 pt-4 md:pt-2 pb-24 md:pb-8">
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={() => router.back()}
+        className="mb-4"
+      >
+        <ArrowLeft className="h-5 w-5" />
+      </Button>
       <div className="divide-y space-y-6">
         <SettingsSection title="Account & Security">
           <Sheet
