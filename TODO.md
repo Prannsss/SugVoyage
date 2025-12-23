@@ -1,12 +1,10 @@
-# TODO: Update Geolocation Page to Display Spots from Backend
+# Password Toggle Button Implementation
 
-## Tasks
-- [ ] Import getSpots from spotService
-- [ ] Add state for spots, loading, and error
-- [ ] Fetch spots on component mount using useEffect
-- [ ] Transform fetched spot data to match map structure (id, title, description, rating, image, category, position, icon, iconBg)
-- [ ] Map spot categories to appropriate icons and colors
-- [ ] Replace hardcoded mapPlaces with fetched spots
-- [ ] Add loading and error handling UI
-- [ ] Update filteredPlaces logic to work with fetched data
-- [ ] Test the implementation
+## Completed Tasks
+- [x] Add Eye and EyeOff icons to imports from lucide-react
+- [x] Add showPassword state initialized to false
+- [x] Modify password input section: wrap in relative div, change type conditionally, add absolute positioned toggle button
+
+## Followup Steps
+- [ ] Test the toggle functionality in the browser
+- [ ] Verify styling matches the design

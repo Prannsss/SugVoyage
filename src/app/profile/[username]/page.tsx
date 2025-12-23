@@ -239,7 +239,9 @@ export default function ProfilePage() {
   const userPosts = findPostsByUsername(username);
 
   // Check if this is the current user's profile
-  const isCurrentUser = Boolean(currentUser && currentUser.username === username);
+  const isCurrentUser = Boolean(
+    currentUser && currentUser.username === username
+  );
 
   // Create a consistent display user object
   // Priority: currentUser data > mock data

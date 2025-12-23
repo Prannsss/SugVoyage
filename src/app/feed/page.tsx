@@ -16,99 +16,14 @@ import {
   Film,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { posts, comments } from "@/lib/posts";
+import { posts } from "@/lib/posts";
 import { useState, useRef, useEffect, useCallback } from "react";
 import { CommentsSheet } from "@/components/layout/CommentsSheet";
-import type { PostWithComments } from "@/lib/posts";
 import { cn } from "@/lib/utils";
 import { PostOptionsSheet } from "@/components/layout/PostOptionsSheet";
 import { PostActions } from "@/components/layout/PostActions";
-
-// Mock video data
-const videoData = [
-  {
-    id: 1,
-    user: {
-      username: "sarah_adventures",
-      name: "Sarah Adventures",
-      avatar: "https://picsum.photos/150/150?random=20",
-    },
-    video: "https://picsum.photos/400/700?random=50", // Using image as placeholder
-    caption:
-      "Golden hour in Moalboal never disappoints. The ocean is calling! 🌅✨",
-    likes: 2400,
-    comments: 412,
-    shares: 203,
-    saves: 155,
-    tags: ["#IslandHopping", "#CebuAdventures", "#Sunset"],
-    location: "Moalboal, Cebu",
-  },
-  {
-    id: 2,
-    user: {
-      username: "cebu_diver",
-      name: "Cebu Diver",
-      avatar: "https://picsum.photos/150/150?random=21",
-    },
-    video: "https://picsum.photos/400/700?random=51",
-    caption: "Swimming with millions of sardines is a surreal experience! 🐟🌊",
-    likes: 5200,
-    comments: 890,
-    shares: 445,
-    saves: 320,
-    tags: ["#SardineRun", "#Diving", "#Moalboal"],
-    location: "Panagsama Beach",
-  },
-  {
-    id: 3,
-    user: {
-      username: "foodie_cebu",
-      name: "Foodie Cebu",
-      avatar: "https://picsum.photos/150/150?random=22",
-    },
-    video: "https://picsum.photos/400/700?random=52",
-    caption: "Best lechon in the world! The crispy skin is to die for 🐷🔥",
-    likes: 3800,
-    comments: 567,
-    shares: 234,
-    saves: 445,
-    tags: ["#CebuLechon", "#FoodPorn", "#Filipino"],
-    location: "Zubuchon, Cebu City",
-  },
-  {
-    id: 4,
-    user: {
-      username: "island_hopper",
-      name: "Island Hopper",
-      avatar: "https://picsum.photos/150/150?random=23",
-    },
-    video: "https://picsum.photos/400/700?random=53",
-    caption:
-      "Kawasan Falls is absolutely magical! The turquoise water is unreal 💙",
-    likes: 8900,
-    comments: 1200,
-    shares: 678,
-    saves: 890,
-    tags: ["#KawasanFalls", "#Nature", "#Adventure"],
-    location: "Badian, Cebu",
-  },
-  {
-    id: 5,
-    user: {
-      username: "sunset_chaser",
-      name: "Sunset Chaser",
-      avatar: "https://picsum.photos/150/150?random=24",
-    },
-    video: "https://picsum.photos/400/700?random=54",
-    caption: "Temple of Leah at golden hour hits different 🏛️✨",
-    likes: 4500,
-    comments: 345,
-    shares: 189,
-    saves: 267,
-    tags: ["#TempleOfLeah", "#CebuCity", "#GoldenHour"],
-    location: "Busay, Cebu",
-  },
-];
+import { getPosts } from "@/services/postService";
+import { getVideos } from "@/services/videoService";
 
 const MobilePostCard = ({ post }: { post: PostWithComments }) => {
   const [isCommentsOpen, setIsCommentsOpen] = useState(false);
@@ -354,26 +269,56 @@ const VideoCard = ({
 export default function FeedPage() {
   const [activeTab, setActiveTab] = useState<"photos" | "videos">("photos");
   const [activeVideoIndex, setActiveVideoIndex] = useState(0);
-  const [displayedVideos, setDisplayedVideos] = useState(videoData.slice(0, 3));
+  const [displayedVideos, setDisplayedVideos] = useState([]);
+  const [posts, setPosts] = useState([]);
+  const [videos, setVideos] = useState([]);
+  const [loading, setLoading] = useState(true);
   const videoContainerRef = useRef<HTMLDivElement>(null);
 
   const postsWithComments: PostWithComments[] = posts.map((post) => ({
     ...post,
-    comments: comments[post.id.toString() as keyof typeof comments] || [],
+    comments: [], // For now, no comments from API
   }));
+
+  // Fetch posts and videos on mount
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const [postsData, videosData] = await Promise.all([
+          getPosts(),
+          getVideos(),
+        ]);
+        setPosts(postsData);
+        setVideos(videosData);
+        setDisplayedVideos(videosData.slice(0, 3));
+      } catch (error) {
+        console.error("Error fetching feed data:", error);
+        // Fallback to static data if API fails
+        const { posts: staticPosts } = await import("@/lib/posts");
+        setPosts(staticPosts);
+        setVideos([]); // No static videos, so empty array
+        setDisplayedVideos([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   // Infinite scroll for videos
   const loadMoreVideos = useCallback(() => {
-    if (displayedVideos.length < videoData.length) {
+    if (displayedVideos.length < videos.length) {
       setDisplayedVideos((prev) => [
         ...prev,
-        ...videoData.slice(prev.length, prev.length + 2),
+        ...videos.slice(prev.length, prev.length + 2),
       ]);
     } else {
       // Loop back to start for infinite scroll effect
-      setDisplayedVideos((prev) => [...prev, ...videoData.slice(0, 2)]);
+      setDisplayedVideos((prev) => [...prev, ...videos.slice(0, 2)]);
     }
-  }, [displayedVideos.length]);
+  }, [displayedVideos.length, videos]);
 
   // Handle scroll for video feed
   useEffect(() => {
@@ -452,28 +397,36 @@ export default function FeedPage() {
             </p>
           </header>
 
-          {/* Desktop: Bento Box Grid */}
-          <div className="hidden md:grid md:grid-cols-4 md:grid-rows-2 gap-4 h-[90vh]">
-            <div className="col-span-2 row-span-2">
-              <DesktopPostCard post={posts[1]} />
+          {loading ? (
+            <div className="flex justify-center items-center h-64">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
             </div>
-            <div className="col-span-1 row-span-1">
-              <DesktopPostCard post={posts[0]} />
-            </div>
-            <div className="col-span-1 row-span-1">
-              <DesktopPostCard post={posts[4]} />
-            </div>
-            <div className="col-span-2 row-span-1">
-              <DesktopPostCard post={posts[3]} />
-            </div>
-          </div>
+          ) : (
+            <>
+              {/* Desktop: Bento Box Grid */}
+              <div className="hidden md:grid md:grid-cols-4 md:grid-rows-2 gap-4 h-[90vh]">
+                <div className="col-span-2 row-span-2">
+                  <DesktopPostCard post={posts[1]} />
+                </div>
+                <div className="col-span-1 row-span-1">
+                  <DesktopPostCard post={posts[0]} />
+                </div>
+                <div className="col-span-1 row-span-1">
+                  <DesktopPostCard post={posts[4]} />
+                </div>
+                <div className="col-span-2 row-span-1">
+                  <DesktopPostCard post={posts[3]} />
+                </div>
+              </div>
 
-          {/* Mobile: Instagram-style Feed */}
-          <div className="md:hidden flex flex-col -mx-4">
-            {postsWithComments.map((post) => (
-              <MobilePostCard key={post.id} post={post} />
-            ))}
-          </div>
+              {/* Mobile: Instagram-style Feed */}
+              <div className="md:hidden flex flex-col -mx-4">
+                {postsWithComments.map((post) => (
+                  <MobilePostCard key={post.id} post={post} />
+                ))}
+              </div>
+            </>
+          )}
         </div>
       )}
 

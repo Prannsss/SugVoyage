@@ -16,7 +16,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Logo } from "@/components/Logo";
-import { Loader2 } from "lucide-react";
+import { Loader2, Eye, EyeOff } from "lucide-react";
 import { loginUser } from "@/services/Authentication/authService";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -29,6 +29,7 @@ export default function LoginPage() {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value } = e.target;
@@ -117,29 +118,43 @@ export default function LoginPage() {
 
             {/* Password Input with Forgot Password below */}
             <div className="space-y-2">
-              <Label
-                htmlFor="password"
-                className="text-sm font-medium text-gray-200"
-              >
-                Password
-              </Label>
-              <Input
-                id="password"
-                type="password"
-                placeholder="Enter your password"
-                value={formData.password}
-                onChange={handleChange}
-                className="h-14 bg-white/10 border-white/30 text-white placeholder:text-gray-400 focus-visible:ring-primary/50 rounded-2xl text-base px-4"
-                required
-                disabled={loading}
-              />
-              <div className="flex justify-end pt-1">
+              <div className="flex items-center justify-between">
+                <Label
+                  htmlFor="password"
+                  className="text-sm font-medium text-gray-200"
+                >
+                  Password
+                </Label>
                 <Link
                   href="#"
                   className="text-sm text-primary hover:underline font-medium"
                 >
                   Forgot password?
                 </Link>
+              </div>
+              <div className="relative">
+                <Input
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Enter your password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  className="h-14 bg-white/10 border-white/30 text-white placeholder:text-gray-400 focus-visible:ring-primary/50 rounded-2xl text-base px-4 pr-12"
+                  required
+                  disabled={loading}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white focus:outline-none"
+                  disabled={loading}
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-5 w-5" />
+                  ) : (
+                    <Eye className="h-5 w-5" />
+                  )}
+                </button>
               </div>
             </div>
 
