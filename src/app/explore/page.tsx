@@ -254,6 +254,9 @@ export default function ExplorePage() {
   const [activeFilter, setActiveFilter] = useState("all");
   const [loading, setLoading] = useState(false);
   const [userLocation, setUserLocation] = useState<string>("Downtown Cebu");
+  const [spots, setSpots] = useState<any[]>([]);
+  const [spotsLoading, setSpotsLoading] = useState(true);
+  const [spotsError, setSpotsError] = useState<string | null>(null);
 
   // Auto-rotate carousel
   useEffect(() => {
@@ -261,6 +264,48 @@ export default function ExplorePage() {
       setCurrentSlide((prev) => (prev + 1) % featuredDestinations.length);
     }, 5000);
     return () => clearInterval(interval);
+  }, []);
+
+  // Fetch spots on component mount
+  useEffect(() => {
+    console.log("ExplorePage: Starting to fetch spots");
+    const fetchSpots = async () => {
+      try {
+        console.log("ExplorePage: Calling getSpots API");
+        setSpotsLoading(true);
+        const response = await getSpots();
+        console.log("ExplorePage: getSpots response:", response);
+        if (response.success) {
+          // Transform backend data to match nearbyPlaces structure
+          const transformedSpots = response.data.map((spot: any) => ({
+            id: spot._id,
+            title: spot.name,
+            distance: "Nearby",
+            rating: spot.rating || 0,
+            reviews: 0, // Assuming no reviews in backend
+            image: spot.image_url || "https://picsum.photos/100/100?random=300",
+            hint: spot.category,
+            category: spot.category,
+            price: "$$",
+            tags: [spot.category],
+            open: true, // Assuming open
+          }));
+          console.log("ExplorePage: Transformed spots:", transformedSpots);
+          setSpots(transformedSpots);
+        } else {
+          console.log("ExplorePage: getSpots failed:", response.message);
+          setSpotsError(response.message || "Failed to fetch spots");
+        }
+      } catch (err) {
+        console.error("ExplorePage: Error fetching spots:", err);
+        setSpotsError("Failed to fetch spots");
+      } finally {
+        setSpotsLoading(false);
+        console.log("ExplorePage: Finished fetching spots, loading = false");
+      }
+    };
+
+    fetchSpots();
   }, []);
 
   // Get "Just For You" recommendations
@@ -1125,77 +1170,106 @@ export default function ExplorePage() {
               </Link>
             </div>
             <div className="space-y-3">
-              {nearbyPlaces.map((place) => (
-                <Link
-                  key={place.id}
-                  href={`/explore/${slugify(place.title)}`}
-                  className="flex items-center gap-3 md:gap-4 p-3 md:p-4 rounded-xl md:rounded-2xl bg-card hover:bg-muted/50 transition-colors group border"
-                >
-                  <div className="relative w-16 h-16 md:w-20 md:h-20 rounded-xl overflow-hidden flex-shrink-0">
-                    <Image
-                      src={place.image}
-                      alt={place.title}
-                      fill
-                      className="object-cover transition-transform duration-300 group-hover:scale-110"
-                      data-ai-hint={place.hint}
-                      sizes="(max-width: 768px) 64px, 80px"
-                    />
-                    <div className="absolute top-1 left-1">
-                      <Badge className="text-[8px] md:text-xs px-1.5 py-0.5">
-                        {place.category}
-                      </Badge>
-                    </div>
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <h3 className="font-semibold font-headline text-base md:text-lg">
-                          {place.title}
-                        </h3>
-                        <p className="text-sm text-muted-foreground mt-0.5">
-                          {place.distance} • {place.price}
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <div
-                          className={cn(
-                            "w-2 h-2 rounded-full",
-                            place.open ? "bg-green-500" : "bg-red-500"
-                          )}
-                        />
-                        <span className="text-xs text-muted-foreground">
-                          {place.open ? "Open" : "Closed"}
-                        </span>
-                      </div>
-                    </div>
-                    <div className="flex items-center justify-between mt-2">
+              {spotsLoading ? (
+                // Loading skeletons
+                Array.from({ length: 4 }).map((_, index) => (
+                  <div
+                    key={index}
+                    className="flex items-center gap-3 md:gap-4 p-3 md:p-4 rounded-xl md:rounded-2xl bg-card border"
+                  >
+                    <Skeleton className="w-16 h-16 md:w-20 md:h-20 rounded-xl" />
+                    <div className="flex-1 space-y-2">
+                      <Skeleton className="h-4 w-3/4" />
+                      <Skeleton className="h-3 w-1/2" />
                       <div className="flex items-center gap-2">
-                        <div className="flex items-center gap-1">
-                          <Star className="h-3 w-3 md:h-4 md:w-4 text-yellow-500 fill-yellow-500" />
-                          <span className="text-sm md:text-base font-medium">
-                            {place.rating}
-                          </span>
-                          <span className="text-xs text-muted-foreground hidden md:inline">
-                            ({place.reviews} reviews)
-                          </span>
-                        </div>
-                        <div className="hidden md:flex gap-1">
-                          {place.tags.map((tag, index) => (
-                            <Badge
-                              key={index}
-                              variant="outline"
-                              className="text-xs"
-                            >
-                              {tag}
-                            </Badge>
-                          ))}
-                        </div>
+                        <Skeleton className="h-3 w-8" />
+                        <Skeleton className="h-3 w-12" />
                       </div>
-                      <ChevronRight className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors flex-shrink-0" />
                     </div>
                   </div>
-                </Link>
-              ))}
+                ))
+              ) : spotsError ? (
+                <div className="text-center py-8">
+                  <p className="text-muted-foreground">
+                    Failed to load nearby places
+                  </p>
+                </div>
+              ) : (
+                spots.map((place) => (
+                  <Link
+                    key={place._id}
+                    href={`/explore/${place._id}`}
+                    onClick={() =>
+                      console.log("Clicking spot with ID:", place.id)
+                    }
+                    className="flex items-center gap-3 md:gap-4 p-3 md:p-4 rounded-xl md:rounded-2xl bg-card hover:bg-muted/50 transition-colors group border"
+                  >
+                    <div className="relative w-16 h-16 md:w-20 md:h-20 rounded-xl overflow-hidden flex-shrink-0">
+                      <Image
+                        src={place.image}
+                        alt={place.title}
+                        fill
+                        className="object-cover transition-transform duration-300 group-hover:scale-110"
+                        data-ai-hint={place.hint}
+                        sizes="(max-width: 768px) 64px, 80px"
+                      />
+                      <div className="absolute top-1 left-1">
+                        <Badge className="text-[8px] md:text-xs px-1.5 py-0.5">
+                          {place.category}
+                        </Badge>
+                      </div>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <h3 className="font-semibold font-headline text-base md:text-lg">
+                            {place.title}
+                          </h3>
+                          <p className="text-sm text-muted-foreground mt-0.5">
+                            {place.distance} • {place.price}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <div
+                            className={cn(
+                              "w-2 h-2 rounded-full",
+                              place.open ? "bg-green-500" : "bg-red-500"
+                            )}
+                          />
+                          <span className="text-xs text-muted-foreground">
+                            {place.open ? "Open" : "Closed"}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-between mt-2">
+                        <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-1">
+                            <Star className="h-3 w-3 md:h-4 md:w-4 text-yellow-500 fill-yellow-500" />
+                            <span className="text-sm md:text-base font-medium">
+                              {place.rating}
+                            </span>
+                            <span className="text-xs text-muted-foreground hidden md:inline">
+                              ({place.reviews} reviews)
+                            </span>
+                          </div>
+                          <div className="hidden md:flex gap-1">
+                            {place.tags.map((tag, index) => (
+                              <Badge
+                                key={index}
+                                variant="outline"
+                                className="text-xs"
+                              >
+                                {tag}
+                              </Badge>
+                            ))}
+                          </div>
+                        </div>
+                        <ChevronRight className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors flex-shrink-0" />
+                      </div>
+                    </div>
+                  </Link>
+                ))
+              )}
             </div>
           </section>
 

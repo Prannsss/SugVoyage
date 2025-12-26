@@ -1,17 +1,36 @@
+"use client";
 
-'use client';
-
-import { useState, useRef, FormEvent, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
-import Image from 'next/image';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Textarea } from '@/components/ui/textarea';
-import { Upload, Send, Image as ImageIcon, X, Video, Globe, Users, AtSign, MapPin, Star, MoreHorizontal, ChevronLeft } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { cn } from '@/lib/utils';
-import { Input } from '@/components/ui/input';
+import { useState, useRef, FormEvent, useCallback } from "react";
+import { useRouter } from "next/navigation";
+import Image from "next/image";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Upload,
+  Send,
+  Image as ImageIcon,
+  X,
+  Video,
+  Globe,
+  Users,
+  AtSign,
+  MapPin,
+  Star,
+  MoreHorizontal,
+  ChevronLeft,
+} from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { cn } from "@/lib/utils";
+import { Input } from "@/components/ui/input";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -19,15 +38,15 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
-    Sheet,
-    SheetContent,
-    SheetHeader,
-    SheetTitle,
-    SheetFooter,
-    SheetTrigger,
-    SheetClose,
-} from '@/components/ui/sheet';
-import { Label } from '@/components/ui/label';
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetFooter,
+  SheetTrigger,
+  SheetClose,
+} from "@/components/ui/sheet";
+import { Label } from "@/components/ui/label";
 import { createPost } from "@/services/postService";
 
 const MAX_IMAGES = 20;
@@ -499,5 +518,3 @@ export default function NewPostPage() {
     </div>
   );
 }
-
-    
